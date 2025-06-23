@@ -2,6 +2,7 @@ import os
 
 from ase.io import read
 from ase.spacegroup import Spacegroup
+from crystallm import get_atomic_props_block_for_formula
 from matid import SymmetryAnalyzer
 from nomad.datamodel.data import ArchiveSection, EntryData, EntryDataCategory
 from nomad.datamodel.metainfo.annotations import (
@@ -15,6 +16,7 @@ from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
 from nomad.orchestrator import utils as orchestrator_utils
 from nomad.orchestrator.shared.constant import TaskQueue
+from pymatgen.core import Composition
 
 from nomad_crystallm.schemas.utils import get_reference_from_mainfile
 from nomad_crystallm.workflows.shared import InferenceUserInput
@@ -412,8 +414,31 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
         if not self.composition:
             logger.warn('No composition provided for the CrystaLLM inference prompt.')
             return
+        try:
+            comp = Composition(self.composition)
+        except Exception as e:
+            logger.error(f'Invalid composition "{self.composition}": {e}')
+            return
 
-        self.prompt = f'data_{self.composition}'
+        # replace the factor with provided number of formula units per cell
+        reduced_comp, factor = comp.get_reduced_composition_and_factor()
+        if self.num_formula_units_per_cell:
+            factor = int(self.num_formula_units_per_cell)
+        comp_with_provided_factor = reduced_comp * factor
+        comp_with_provided_factor_str = ''.join(
+            comp_with_provided_factor.formula.split()
+        )
+
+        if self.space_group:
+            space_group_str = ''.join(self.space_group.split())
+            self.prompt = (
+                f'data_{comp_with_provided_factor_str}\n'
+                f'{get_atomic_props_block_for_formula(comp_with_provided_factor_str)}\n'
+                f'_symmetry_space_group_name_H-M {space_group_str}\n'
+            )
+            return
+
+        self.prompt = f'data_{comp_with_provided_factor_str}\n'
 
     def normalize(self, archive, logger=None):
         """
