@@ -1,4 +1,4 @@
-# nomad-plugin-crystal-llm
+# nomad-crystallm
 
 Nomad example template
 
@@ -8,8 +8,8 @@ This `nomad` plugin was generated with `Cookiecutter` along with `@nomad`'s [`co
 
 If you want to develop locally this plugin, clone the project and in the plugin folder, create a virtual environment (you can use Python 3.10, 3.11 or 3.12):
 ```sh
-git clone https://github.com/blueraft/nomad-plugin-crystal-llm.git
-cd nomad-plugin-crystal-llm
+git clone https://github.com/FAIRmat-NFDI/nomad-crystallm.git
+cd nomad-crystallm
 python3.11 -m venv .pyenv
 . .pyenv/bin/activate
 ```
@@ -116,3 +116,4 @@ We use [`cruft`](https://github.com/cruft/cruft) to update the project based on 
 | Name | E-mail     |
 |------|------------|
 | Ahmed Ilyas | [ahmed.ilyas@physik.hu-berlin.de](mailto:ahmed.ilyas@physik.hu-berlin.de)
+| Sarthak Kapoor | [sarthak.kapoor@physik.hu-berlin.de](mailto:sarthak.kapoor@physik.hu-berlin.de)

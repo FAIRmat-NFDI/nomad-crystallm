@@ -1,4 +1,4 @@
-# Welcome to the `nomad-plugin-crystal-llm` documentation
+# Welcome to the `nomad-crystallm` documentation
 
 Nomad example template
 
