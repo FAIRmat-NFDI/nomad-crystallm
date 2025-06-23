@@ -13,7 +13,7 @@ from nomad.datamodel.results import Material, Results, SymmetryNew, System
 from nomad.metainfo import Category, MEnum, Quantity, SchemaPackage, Section, SubSection
 from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
-from nomad.orchestrator import util as orchestrator_utils
+from nomad.orchestrator import utils as orchestrator_utils
 from nomad.orchestrator.shared.constant import TaskQueue
 
 from nomad_crystallm.schemas.utils import get_reference_from_mainfile

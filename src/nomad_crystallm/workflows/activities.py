@@ -1,6 +1,6 @@
 import os
 
-from nomad.orchestrator.util import workflow_artifacts_dir
+from nomad.orchestrator.utils import workflow_artifacts_dir
 from temporalio import activity
 
 from nomad_crystallm.workflows.shared import (

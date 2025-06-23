@@ -15,7 +15,7 @@ from crystallm import (
 )
 from nomad.app.v1.routers.uploads import get_upload_with_read_access
 from nomad.datamodel import User
-from nomad.orchestrator.util import get_upload_files
+from nomad.orchestrator.utils import get_upload_files
 
 from nomad_crystallm.schemas.schema import (
     CrystaLLMInferenceResult,
