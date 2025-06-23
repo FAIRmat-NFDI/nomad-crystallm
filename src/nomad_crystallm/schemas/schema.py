@@ -13,11 +13,11 @@ from nomad.datamodel.results import Material, Results, SymmetryNew, System
 from nomad.metainfo import Category, MEnum, Quantity, SchemaPackage, Section, SubSection
 from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
-from nomad.orchestrator import util as orchestrator_utils
+from nomad.orchestrator import utils as orchestrator_utils
 from nomad.orchestrator.shared.constant import TaskQueue
 
-from nomad_plugin_crystal_llm.schemas.utils import get_reference_from_mainfile
-from nomad_plugin_crystal_llm.workflows.shared import InferenceUserInput
+from nomad_crystallm.schemas.utils import get_reference_from_mainfile
+from nomad_crystallm.workflows.shared import InferenceUserInput
 
 SPACE_GROUPS = [Spacegroup(i).symbol for i in range(1, 231)]
 
@@ -392,8 +392,8 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
             dtype=self.inference_settings.dtype,
             compile=self.inference_settings.compile,
         )
-        workflow_name = 'nomad_plugin_crystal_llm.workflows.InferenceWorkflow'
-        workflow_id = orchestrator_utils.run_workflow(
+        workflow_name = 'nomad_crystallm.workflows.InferenceWorkflow'
+        workflow_id = orchestrator_utils.start_workflow(
             workflow_name=workflow_name, data=input_data, task_queue=TaskQueue.GPU
         )
         if not self.triggered_inferences:

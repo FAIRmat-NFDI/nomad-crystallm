@@ -1,8 +1,8 @@
-site_name: nomad-plugin-crystal-llm
+site_name: nomad-crystallm
 site_description: Nomad example template
 site_author: Ahmed Ilyas
 
-repo_url: https://github.com/blueraft/nomad-plugin-crystal-llm
+repo_url: https://github.com/FAIRmat-NFDI/nomad-crystallm
 edit_uri: ""
 
 nav:

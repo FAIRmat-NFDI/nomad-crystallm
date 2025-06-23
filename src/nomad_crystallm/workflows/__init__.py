@@ -3,17 +3,17 @@ from nomad.orchestrator.shared.constant import TaskQueue
 from pydantic import BaseModel
 
 
-class CrystalLLMEntryPoint(BaseModel):
+class CrystaLLMEntryPoint(BaseModel):
     entry_point_type: str = 'workflow'
 
     def load(self):
-        from nomad_plugin_crystal_llm.workflows.activities import (
+        from nomad_crystallm.workflows.activities import (
             construct_model_input,
             get_model,
             run_inference,
             write_results,
         )
-        from nomad_plugin_crystal_llm.workflows.workflow import InferenceWorkflow
+        from nomad_crystallm.workflows.workflow import InferenceWorkflow
 
         return BaseWorkflowHandler(
             task_queue=TaskQueue.GPU,
@@ -22,4 +22,4 @@ class CrystalLLMEntryPoint(BaseModel):
         )
 
 
-crystal_llm = CrystalLLMEntryPoint()
+crystallm = CrystaLLMEntryPoint()

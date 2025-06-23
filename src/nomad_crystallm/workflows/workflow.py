@@ -3,20 +3,20 @@ from datetime import timedelta
 from temporalio import workflow
 
 with workflow.unsafe.imports_passed_through():
-    from nomad_plugin_crystal_llm.workflows.activities import (
+    from nomad_crystallm.workflows.activities import (
         construct_model_input,
         get_model,
         run_inference,
         write_results,
     )
-    from nomad_plugin_crystal_llm.workflows.shared import (
+    from nomad_crystallm.workflows.shared import (
         InferenceInput,
         InferenceModelInput,
         InferenceResultsInput,
     )
 
 
-@workflow.defn(name='nomad_plugin_crystal_llm.workflows.InferenceWorkflow')
+@workflow.defn(name='nomad_crystallm.workflows.InferenceWorkflow')
 class InferenceWorkflow:
     @workflow.run
     async def run(self, data: InferenceInput) -> list[str]:
