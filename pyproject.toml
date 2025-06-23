@@ -26,7 +26,12 @@ maintainers = [
     { name = "FAIRmat", email = "fairmat@physik.hu-berlin.de" },
 ]
 license = { file = "LICENSE" }
-dependencies = ["nomad-lab>=1.3.14", "python-magic-bin; sys_platform == 'win32'"]
+dependencies = [
+    "nomad-lab>=1.3.14",
+    "python-magic-bin; sys_platform == 'win32'",
+    "nomad-schema-plugin-run>=1.0.1",
+    "nomad-schema-plugin-simulation-workflow>=1.0.9",
+    ]
 
 [project.urls]
 Repository = "https://github.com/FAIRmat-NFDI/nomad-crystallm"
