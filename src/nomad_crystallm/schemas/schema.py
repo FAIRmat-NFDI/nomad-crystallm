@@ -392,8 +392,8 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
             dtype=self.inference_settings.dtype,
             compile=self.inference_settings.compile,
         )
-        workflow_name = 'nomad_plugin_crystal_llm.workflows.InferenceWorkflow'
-        workflow_id = orchestrator_utils.run_workflow(
+        workflow_name = 'nomad_crystallm.workflows.InferenceWorkflow'
+        workflow_id = orchestrator_utils.start_workflow(
             workflow_name=workflow_name, data=input_data, task_queue=TaskQueue.GPU
         )
         if not self.triggered_inferences:
