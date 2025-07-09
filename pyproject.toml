@@ -13,7 +13,7 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 name = "nomad-crystallm"
-description = "Nomad example template"
+description = "A NOMAD plugin for running CrystaLLM inference in NOMAD installations."
 version = "0.1.0"
 readme = "README.md"
 requires-python = ">=3.10"

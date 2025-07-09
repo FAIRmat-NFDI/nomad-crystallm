@@ -1,8 +1,9 @@
 # nomad-crystallm
 
-Nomad example template
+`nomad-crystallm` is a NOMAD plugin that can be used to run inference of
+[CrystaLLM](https://crystallm.com/) models and create entries based on the generated CIFs.
 
-This `nomad` plugin was generated with `Cookiecutter` along with `@nomad`'s [`cookiecutter-nomad-plugin`](https://github.com/FAIRmat-NFDI/cookiecutter-nomad-plugin) template.
+
 
 ## Development
 
@@ -28,6 +29,41 @@ Install the `nomad-lab` package:
 ```sh
 uv pip install -e '.[dev]'
 ```
+### Developing on `nomad-distro-dev`
+We now recommend using the dedicated
+[`nomad-distro-dev`](https://github.com/FAIRmat-NFDI/nomad-distro-dev)
+repository to simplify the process. Please refer to that repository for
+detailed instructions on how to add this plugin to your development environment.
+
+This plugin relies on some new developments in `nomad-lab` package that are
+currently available in a feature branch. To use it in your `nomad-distro-dev`,
+you have to change the branch of the `nomad-lab` sub-module available at
+`packages/nomad-FAIR` to the feature branch:
+```sh
+# assuming you are in the root of your nomad-distro-dev repo
+cd packages/nomad-FAIR
+git checkout temporal-workflows
+cd -
+```
+
+Further, you need to modify `nomad.yaml` config file to contain the following
+table:
+```yaml
+temporal:
+  enabled: true
+```
+
+We use [temporal](https://temporal.io/) as a workflow scheduler to run the
+inference pipeline. For this, you will need temporal container configurations
+in `docker-compose.yaml`, which should be available once you update your
+`nomad-distro-dev` fork. Specifically, here are the required changes: https://github.com/FAIRmat-NFDI/nomad-distro-dev/commit/16e6129c43d9e6d56f2ff5a92c041c88a6a2eac2.
+
+With these changes in place, make sure to run `uv run poe setup` to reset
+the environment.
+
+Finally, you can run your local installation with `uv run poe start` and
+`uv run poe gui start` in separate terminals. Additionally, start a temporal
+worker in a third terminal using `uv run nomad admin run orchestrator-gpu-worker`.
 
 ### Run the tests
 
