@@ -54,8 +54,9 @@ temporal:
 ```
 
 We use [temporal](https://temporal.io/) as a workflow scheduler to run the
-inference pipeline. For this, you need to add some new container configuration
-in `docker-compose.yaml`.
+inference pipeline. For this, you will need temporal container configurations
+in `docker-compose.yaml`. This should be available once you update your
+`nomad-distro-dev` fork.
 
 <details>
 <summary>Here's how the `docker-compose.yaml` should look like:</summary>
@@ -130,50 +131,21 @@ in `docker-compose.yaml`.
       command: mongod
       # --logpath=/dev/null # --quiet
 
-    postgresql:
-      container_name: nomad_postgresql
-      environment:
-        POSTGRES_PASSWORD: temporal
-        POSTGRES_USER: temporal
-      image: postgres:16
-      ports:
-        - 5432:5432
-      volumes:
-        - nomad_postgresql:/var/lib/postgresql/data
-
     temporal:
       container_name: nomad_temporal
-      depends_on:
-        - postgresql
-      environment:
-        - DB=postgres12
-        - DB_PORT=5432
-        - POSTGRES_USER=temporal
-        - POSTGRES_PWD=temporal
-        - POSTGRES_SEEDS=postgresql
-        - TEMPORAL_ADDRESS=temporal:7233
-        - TEMPORAL_CLI_ADDRESS=temporal:7233
-      image: temporalio/auto-setup:1.27.2
+      image: ghcr.io/fairmat-nfdi/temporal-dev-server:v1.3.0
+      platform: linux/amd64
+      volumes:
+        - nomad_temporal:/data
       ports:
         - 7233:7233
-
-    temporal-ui:
-      container_name: nomad_temporal_ui
-      depends_on:
-        - temporal
-      environment:
-        - TEMPORAL_ADDRESS=temporal:7233
-        - TEMPORAL_CORS_ORIGINS=http://localhost:3000
-      image: temporalio/ui:2.34.0
-      ports:
         - 8080:8080
-
   volumes:
     nomad_mongo:
     nomad_mongo_config:
     nomad_elastic:
     nomad_rabbitmq:
-    nomad_postgresql:
+    nomad_temporal:
 ```
 </details>
 
