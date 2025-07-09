@@ -58,123 +58,122 @@ inference pipeline. For this, you need to add some new container configuration
 in `docker-compose.yaml`.
 
 <details>
-<summary>
-Here's how the `docker-compose.yaml` should look like:
-</summary>
+<summary>Here's how the `docker-compose.yaml` should look like:</summary>
+
 ```yaml
-#
-# Copyright (c) 2018-2020 The NOMAD Authors.
-#
-# This file is part of NOMAD.
-# See https://nomad-lab.eu for further info.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+  #
+  # Copyright (c) 2018-2020 The NOMAD Authors.
+  #
+  # This file is part of NOMAD.
+  # See https://nomad-lab.eu for further info.
+  #
+  # Licensed under the Apache License, Version 2.0 (the "License");
+  # you may not use this file except in compliance with the License.
+  # You may obtain a copy of the License at
+  #
+  #     http://www.apache.org/licenses/LICENSE-2.0
+  #
+  # Unless required by applicable law or agreed to in writing, software
+  # distributed under the License is distributed on an "AS IS" BASIS,
+  # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  # See the License for the specific language governing permissions and
+  # limitations under the License.
+  #
 
-services:
-  # broker for celery
-  rabbitmq:
-    restart: "no"
-    image: rabbitmq:3.11.5
-    container_name: nomad_rabbitmq
-    environment:
-      - RABBITMQ_ERLANG_COOKIE=SWQOKODSQALRPCLNMEQG
-      - RABBITMQ_DEFAULT_USER=rabbitmq
-      - RABBITMQ_DEFAULT_PASS=rabbitmq
-      - RABBITMQ_DEFAULT_VHOST=/
-    ports:
-      - 5672:5672
-    volumes:
-      - nomad_rabbitmq:/var/lib/rabbitmq
+  services:
+    # broker for celery
+    rabbitmq:
+      restart: "no"
+      image: rabbitmq:3.11.5
+      container_name: nomad_rabbitmq
+      environment:
+        - RABBITMQ_ERLANG_COOKIE=SWQOKODSQALRPCLNMEQG
+        - RABBITMQ_DEFAULT_USER=rabbitmq
+        - RABBITMQ_DEFAULT_PASS=rabbitmq
+        - RABBITMQ_DEFAULT_VHOST=/
+      ports:
+        - 5672:5672
+      volumes:
+        - nomad_rabbitmq:/var/lib/rabbitmq
 
-  # the search engine
-  elastic:
-    restart: "no"
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.27
-    container_name: nomad_elastic
-    environment:
-      - ES_JAVA_OPTS=-Xms512m -Xmx512m
-      - cluster.routing.allocation.disk.threshold_enabled=true
-      - cluster.routing.allocation.disk.watermark.flood_stage=1gb
-      - cluster.routing.allocation.disk.watermark.low=4gb
-      - cluster.routing.allocation.disk.watermark.high=2gb
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    ports:
-      - 9200:9200
-    volumes:
-      - nomad_elastic:/usr/share/elasticsearch/data
+    # the search engine
+    elastic:
+      restart: "no"
+      image: docker.elastic.co/elasticsearch/elasticsearch:7.17.27
+      container_name: nomad_elastic
+      environment:
+        - ES_JAVA_OPTS=-Xms512m -Xmx512m
+        - cluster.routing.allocation.disk.threshold_enabled=true
+        - cluster.routing.allocation.disk.watermark.flood_stage=1gb
+        - cluster.routing.allocation.disk.watermark.low=4gb
+        - cluster.routing.allocation.disk.watermark.high=2gb
+        - discovery.type=single-node
+        - xpack.security.enabled=false
+      ports:
+        - 9200:9200
+      volumes:
+        - nomad_elastic:/usr/share/elasticsearch/data
 
-  # the user data db
-  mongo:
-    restart: "no"
-    image: mongo:5.0.6
-    container_name: nomad_mongo
-    environment:
-      - MONGO_DATA_DIR=/data/db
-      - MONGO_LOG_DIR=/dev/null
-    ports:
-      - 27017:27017
-    volumes:
-      - nomad_mongo:/data/db
-      - nomad_mongo_config:/data/configdb
-    command: mongod
-    # --logpath=/dev/null # --quiet
+    # the user data db
+    mongo:
+      restart: "no"
+      image: mongo:5.0.6
+      container_name: nomad_mongo
+      environment:
+        - MONGO_DATA_DIR=/data/db
+        - MONGO_LOG_DIR=/dev/null
+      ports:
+        - 27017:27017
+      volumes:
+        - nomad_mongo:/data/db
+        - nomad_mongo_config:/data/configdb
+      command: mongod
+      # --logpath=/dev/null # --quiet
 
-  postgresql:
-    container_name: nomad_postgresql
-    environment:
-      POSTGRES_PASSWORD: temporal
-      POSTGRES_USER: temporal
-    image: postgres:16
-    ports:
-      - 5432:5432
-    volumes:
-      - nomad_postgresql:/var/lib/postgresql/data
+    postgresql:
+      container_name: nomad_postgresql
+      environment:
+        POSTGRES_PASSWORD: temporal
+        POSTGRES_USER: temporal
+      image: postgres:16
+      ports:
+        - 5432:5432
+      volumes:
+        - nomad_postgresql:/var/lib/postgresql/data
 
-  temporal:
-    container_name: nomad_temporal
-    depends_on:
-      - postgresql
-    environment:
-      - DB=postgres12
-      - DB_PORT=5432
-      - POSTGRES_USER=temporal
-      - POSTGRES_PWD=temporal
-      - POSTGRES_SEEDS=postgresql
-      - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CLI_ADDRESS=temporal:7233
-    image: temporalio/auto-setup:1.27.2
-    ports:
-      - 7233:7233
+    temporal:
+      container_name: nomad_temporal
+      depends_on:
+        - postgresql
+      environment:
+        - DB=postgres12
+        - DB_PORT=5432
+        - POSTGRES_USER=temporal
+        - POSTGRES_PWD=temporal
+        - POSTGRES_SEEDS=postgresql
+        - TEMPORAL_ADDRESS=temporal:7233
+        - TEMPORAL_CLI_ADDRESS=temporal:7233
+      image: temporalio/auto-setup:1.27.2
+      ports:
+        - 7233:7233
 
-  temporal-ui:
-    container_name: nomad_temporal_ui
-    depends_on:
-      - temporal
-    environment:
-      - TEMPORAL_ADDRESS=temporal:7233
-      - TEMPORAL_CORS_ORIGINS=http://localhost:3000
-    image: temporalio/ui:2.34.0
-    ports:
-      - 8080:8080
+    temporal-ui:
+      container_name: nomad_temporal_ui
+      depends_on:
+        - temporal
+      environment:
+        - TEMPORAL_ADDRESS=temporal:7233
+        - TEMPORAL_CORS_ORIGINS=http://localhost:3000
+      image: temporalio/ui:2.34.0
+      ports:
+        - 8080:8080
 
-volumes:
-  nomad_mongo:
-  nomad_mongo_config:
-  nomad_elastic:
-  nomad_rabbitmq:
-  nomad_postgresql:
+  volumes:
+    nomad_mongo:
+    nomad_mongo_config:
+    nomad_elastic:
+    nomad_rabbitmq:
+    nomad_postgresql:
 ```
 </details>
 
