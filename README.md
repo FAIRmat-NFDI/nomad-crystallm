@@ -27,7 +27,7 @@ pip install uv
 
 Install the `nomad-lab` package:
 ```sh
-uv pip install -e '.[dev]'
+uv pip install -e '.[gpu-workflow, dev]'
 ```
 ### Developing on `nomad-distro-dev`
 We now recommend using the dedicated
@@ -35,7 +35,17 @@ We now recommend using the dedicated
 repository to simplify the process. Please refer to that repository for
 detailed instructions on how to add this plugin to your development environment.
 
-This plugin relies on some new developments in `nomad-lab` package that are
+When adding this plugin to `nomad-distro-dev`, make sure to add it
+with the `gpu-workflow` dependencies. For this, add the following
+to the `pyproject.toml`:
+```toml
+dependencies = [
+  ...
+  "nomad-crystallm[gpu-workflow]",
+]
+```
+
+This plugin relies on some new developments in the `nomad-lab` package that are
 currently available in a feature branch. To use it in your `nomad-distro-dev`,
 you have to change the branch of the `nomad-lab` sub-module available at
 `packages/nomad-FAIR` to the feature branch:
