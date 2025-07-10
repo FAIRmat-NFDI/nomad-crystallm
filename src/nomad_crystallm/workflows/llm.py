@@ -5,6 +5,7 @@ import shutil
 import tarfile
 import tempfile
 from contextlib import nullcontext
+from typing import TYPE_CHECKING
 
 import aiohttp
 import torch
@@ -29,6 +30,8 @@ from nomad_crystallm.workflows.shared import (
     InferenceResultsInput,
 )
 
+if TYPE_CHECKING:
+    from logging import LoggerAdapter
 BLOCK_SIZE = 1024
 
 
@@ -143,7 +146,7 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[str]:
     return generated
 
 
-def postprocess(cif: str, fname: str) -> str:
+def postprocess(cif: str, fname: str, logger: 'LoggerAdapter' = None) -> str:
     """
     Post-process the CIF file to ensure it is in a valid format.
     """
@@ -157,12 +160,20 @@ def postprocess(cif: str, fname: str) -> str:
         cif = remove_atom_props_block(cif)
     except Exception as e:
         cif = '# WARNING: CrystaLLM could not post-process this file properly!\n' + cif
-        print(f"Error post-processing CIF file '{fname}': {e}")
+        if logger:
+            logger.error(
+                f"Error post-processing CIF file '{fname}': {e}",
+                exc_info=True,
+            )
+        else:
+            print(f"Error post-processing CIF file '{fname}': {e}")
 
     return cif
 
 
-def write_cif_files(result: InferenceResultsInput) -> None:
+def write_cif_files(
+    result: InferenceResultsInput, logger: 'LoggerAdapter' = None
+) -> None:
     """
     Write the generated CIFs to the specified target (console or file).
     """
@@ -178,7 +189,7 @@ def write_cif_files(result: InferenceResultsInput) -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         for k, sample in enumerate(result.generated_samples):
             fname = os.path.join(tmpdir, f'{result.cif_prefix}_{k + 1}.cif')
-            processed_sample = postprocess(sample, fname)
+            processed_sample = postprocess(sample, fname, logger)
             with open(fname, 'w', encoding='utf-8') as f:
                 f.write(processed_sample)
             upload_files.add_rawfiles(fname, target_dir=result.cif_dir)

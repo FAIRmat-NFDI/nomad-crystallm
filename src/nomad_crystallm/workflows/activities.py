@@ -41,7 +41,7 @@ async def write_results(data: InferenceResultsInput) -> None:
     """
     from .llm import write_cif_files, write_entry_archive
 
-    cif_paths = write_cif_files(data)
+    cif_paths = write_cif_files(data, logger=activity.logger)
     if not cif_paths:
         raise ValueError('No CIF files were generated.')
     write_entry_archive(cif_paths, data)
