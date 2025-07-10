@@ -19,11 +19,26 @@ import logging
 
 import pytest
 import structlog
+from nomad.config import config
 from nomad.utils import structlogging
 from structlog.testing import LogCapture
 
+from nomad_crystallm.schemas import CrystallmSchemaPackageEntryPoint
+
 structlogging.ConsoleFormatter.short_format = True
 setattr(logging, 'Formatter', structlogging.ConsoleFormatter)
+
+
+@pytest.fixture(scope='session', autouse=True)
+def import_schema_packages():
+    """
+    Loads the schemas packages using the entry points defined in the
+    `nomad_crystallm.schemas` module.
+    """
+    config.load_plugins()
+    for entry_point in config.plugins.entry_points.filtered_values():
+        if isinstance(entry_point, CrystallmSchemaPackageEntryPoint):
+            entry_point.load()
 
 
 @pytest.fixture(
