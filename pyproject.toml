@@ -27,7 +27,7 @@ maintainers = [
 ]
 license = { file = "LICENSE" }
 dependencies = [
-    "nomad-lab>=1.3.14",
+    "nomad-lab @ git+https://gitlab.mpcdf.mpg.de/nomad-lab/nomad-FAIR.git@temporal-workflows",
     "python-magic-bin; sys_platform == 'win32'",
     "nomad-schema-plugin-run>=1.0.1",
     "nomad-schema-plugin-simulation-workflow>=1.0.9",
