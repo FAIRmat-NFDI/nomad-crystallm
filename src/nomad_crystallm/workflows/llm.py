@@ -146,7 +146,7 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[str]:
     return generated
 
 
-def postprocess(cif: str, fname: str, logger: 'LoggerAdapter' = None) -> str:
+def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
     """
     Post-process the CIF file to ensure it is in a valid format.
     """
