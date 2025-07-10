@@ -20,13 +20,13 @@ with workflow.unsafe.imports_passed_through():
 class InferenceWorkflow:
     @workflow.run
     async def run(self, data: InferenceInput) -> list[str]:
-        raw_input = await workflow.execute_activity(
+        constructed_model_input = await workflow.execute_activity(
             construct_model_input,
             data,
             start_to_close_timeout=timedelta(seconds=60),
         )
         model_data = InferenceModelInput(
-            raw_input=raw_input,
+            raw_input=constructed_model_input,
             model_path=data.model_path,
             model_url=data.model_url,
             num_samples=data.num_samples,

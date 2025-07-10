@@ -32,7 +32,9 @@ async def start_inference_task(
     workflow_id = f'crystallm-workflow-{user.user_id}-{uuid.uuid4()}'
     client = main.temporal_client()
     workflow_data = InferenceInput(
-        raw_input=data.raw_input,
+        input_composition=data.input_composition,
+        input_num_formula_units_per_cell=data.input_num_formula_units_per_cell,
+        input_space_group=data.input_space_group,
         generate_cif=data.generate_cif,
         upload_id=data.upload_id,
         model_path=data.model_path,

@@ -15,7 +15,9 @@ class InferenceUserInput:
 
     upload_id: str
     user_id: str
-    raw_input: str
+    input_composition: str
+    input_num_formula_units_per_cell: str = ''
+    input_space_group: str = ''
     generate_cif: bool = False
     model_path: str = 'models/crystallm_v1_small/ckpt.pt'
     model_url: str = (
@@ -55,7 +57,9 @@ class InferenceInput:
 
     upload_id: str
     user_id: str
-    raw_input: str
+    input_composition: str
+    input_num_formula_units_per_cell: str = ''
+    input_space_group: str = ''
     generate_cif: bool = False
     model_path: str = 'models/crystallm_v1_small/ckpt.pt'
     model_url: str = (
