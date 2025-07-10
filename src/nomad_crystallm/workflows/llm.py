@@ -21,6 +21,7 @@ from crystallm import (
 from nomad.app.v1.routers.uploads import get_upload_with_read_access
 from nomad.datamodel import User
 from nomad.orchestrator.utils import get_upload_files
+from pymatgen.core import Composition
 
 from nomad_crystallm.schemas.schema import (
     CrystaLLMInferenceResult,
@@ -85,7 +86,7 @@ async def download_model(model_path: str, model_url: str | None = None) -> dict:
 
 
 def construct_prompt(
-    comp: str,
+    composition: str,
     num_formula_units_per_cell: str,
     space_group: str,
 ) -> str:
@@ -94,6 +95,7 @@ def construct_prompt(
     composition, number of formula units per cell, and space group.
     """
     # replace the factor with provided number of formula units per cell
+    comp = Composition(composition)
     reduced_comp, factor = comp.get_reduced_composition_and_factor()
     if num_formula_units_per_cell:
         factor = int(num_formula_units_per_cell)
