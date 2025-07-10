@@ -5,6 +5,7 @@ import shutil
 import tarfile
 import tempfile
 from contextlib import nullcontext
+from typing import TYPE_CHECKING
 
 import aiohttp
 import torch
@@ -12,6 +13,9 @@ from crystallm import (
     GPT,
     CIFTokenizer,
     GPTConfig,
+    extract_space_group_symbol,
+    remove_atom_props_block,
+    replace_symmetry_operators,
 )
 from nomad.app.v1.routers.uploads import get_upload_with_read_access
 from nomad.datamodel import User
@@ -26,6 +30,8 @@ from nomad_crystallm.workflows.shared import (
     InferenceResultsInput,
 )
 
+if TYPE_CHECKING:
+    from logging import LoggerAdapter
 BLOCK_SIZE = 1024
 
 
@@ -140,7 +146,32 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[str]:
     return generated
 
 
-def write_cif_files(result: InferenceResultsInput) -> None:
+def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
+    """
+    Post-process the CIF file to ensure it is in a valid format.
+    """
+    try:
+        # replace the symmetry operators with the correct operators
+        space_group_symbol = extract_space_group_symbol(cif)
+        if space_group_symbol is not None and space_group_symbol != 'P 1':
+            cif = replace_symmetry_operators(cif, space_group_symbol)
+
+        # remove atom props
+        cif = remove_atom_props_block(cif)
+    except Exception as e:
+        cif = '# WARNING: CrystaLLM could not post-process this file properly!\n' + cif
+        logger.error(
+            f"Error post-processing CIF file '{fname}': {e}",
+            exc_info=True,
+        )
+
+
+    return cif
+
+
+def write_cif_files(
+    result: InferenceResultsInput, logger: 'LoggerAdapter'
+) -> None:
     """
     Write the generated CIFs to the specified target (console or file).
     """
@@ -156,8 +187,9 @@ def write_cif_files(result: InferenceResultsInput) -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         for k, sample in enumerate(result.generated_samples):
             fname = os.path.join(tmpdir, f'{result.cif_prefix}_{k + 1}.cif')
+            processed_sample = postprocess(sample, fname, logger)
             with open(fname, 'w', encoding='utf-8') as f:
-                f.write(sample)
+                f.write(processed_sample)
             upload_files.add_rawfiles(fname, target_dir=result.cif_dir)
             cif_paths.append(
                 os.path.join(result.cif_dir, f'{result.cif_prefix}_{k + 1}.cif')
