@@ -170,7 +170,7 @@ def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
 
 
 def write_cif_files(
-    result: InferenceResultsInput, logger: 'LoggerAdapter' = None
+    result: InferenceResultsInput, logger: 'LoggerAdapter'
 ) -> None:
     """
     Write the generated CIFs to the specified target (console or file).
