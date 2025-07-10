@@ -43,7 +43,7 @@ gpu-workflow = [
     "aiohttp",
     "crystallm @ git+https://github.com/ka-sarthak/CrystaLLM.git@main",
 ]
-dev = ["ruff", "pytest", "structlog"]
+dev = ["ruff", "pytest", "structlog", "python-logstash>=0.4.6",]
 
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
