@@ -1,0 +1,4 @@
+data:
+  m_def: nomad_crystallm.schemas.schema.CrystaLLMInferenceResult
+  generated_cifs:
+    - sample_1.cif
