@@ -160,13 +160,11 @@ def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
         cif = remove_atom_props_block(cif)
     except Exception as e:
         cif = '# WARNING: CrystaLLM could not post-process this file properly!\n' + cif
-        if logger:
-            logger.error(
-                f"Error post-processing CIF file '{fname}': {e}",
-                exc_info=True,
-            )
-        else:
-            print(f"Error post-processing CIF file '{fname}': {e}")
+        logger.error(
+            f"Error post-processing CIF file '{fname}': {e}",
+            exc_info=True,
+        )
+
 
     return cif
 
