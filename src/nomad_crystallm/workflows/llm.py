@@ -14,12 +14,14 @@ from crystallm import (
     CIFTokenizer,
     GPTConfig,
     extract_space_group_symbol,
+    get_atomic_props_block_for_formula,
     remove_atom_props_block,
     replace_symmetry_operators,
 )
 from nomad.app.v1.routers.uploads import get_upload_with_read_access
 from nomad.datamodel import User
 from nomad.orchestrator.utils import get_upload_files
+from pymatgen.core import Composition
 
 from nomad_crystallm.schemas.schema import (
     CrystaLLMInferenceResult,
@@ -81,6 +83,34 @@ async def download_model(model_path: str, model_url: str | None = None) -> dict:
         shutil.move(os.path.join(tmp_zipdir, model_files[0]), model_path)
 
     return {'model_path': model_path, 'model_url': model_url}
+
+
+def construct_prompt(
+    composition: str,
+    num_formula_units_per_cell: str,
+    space_group: str,
+) -> str:
+    """
+    Construct the prompt for CrystaLLM inference based on the provided
+    composition, number of formula units per cell, and space group.
+    """
+    # replace the factor with provided number of formula units per cell
+    comp = Composition(composition)
+    reduced_comp, factor = comp.get_reduced_composition_and_factor()
+    if num_formula_units_per_cell:
+        factor = int(num_formula_units_per_cell)
+    comp_with_provided_factor = reduced_comp * factor
+    comp_with_provided_factor_str = ''.join(comp_with_provided_factor.formula.split())
+
+    if space_group:
+        space_group_str = ''.join(space_group.split())
+        return (
+            f'data_{comp_with_provided_factor_str}\n'
+            f'{get_atomic_props_block_for_formula(comp_with_provided_factor_str)}\n'
+            f'_symmetry_space_group_name_H-M {space_group_str}\n'
+        )
+
+    return f'data_{comp_with_provided_factor_str}\n'
 
 
 def evaluate_model(inference_state: InferenceModelInput) -> list[str]:

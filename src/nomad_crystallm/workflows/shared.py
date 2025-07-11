@@ -7,7 +7,9 @@ class InferenceUserInput:
     User input data for the inference workflow.
 
     Attributes:
-    - raw_input: Raw input string to use as a prompt.
+    - input_composition: Composition to use as a prompt for the model.
+    - input_num_formula_units_per_cell: Number of formula units per cell.
+    - input_space_group: Space group to use in the prompt.
     - user_id: User making the request
     - upload_id: If `generate_cif` is set to True, save CIF files to this upload.
     - generate_cif: If True, the model will generate CIF files.
@@ -15,7 +17,9 @@ class InferenceUserInput:
 
     upload_id: str
     user_id: str
-    raw_input: str
+    input_composition: str
+    input_num_formula_units_per_cell: str = ''
+    input_space_group: str = ''
     generate_cif: bool = False
     model_path: str = 'models/crystallm_v1_small/ckpt.pt'
     model_url: str = (
@@ -36,7 +40,9 @@ class InferenceInput:
     User input data for the inference workflow.
 
     Attributes:
-    - raw_input: Raw input string to use as a prompt.
+    - input_composition: The composition to use as a prompt.
+    - input_num_formula_units_per_cell: Number of formula units per cell.
+    - input_space_group: Space group of the composition.
     - user_id: User making the request
     - upload_id: If `generate_cif` is set to True, save CIF files to this upload.
     - generate_cif: If True, the model will generate CIF files.
@@ -55,7 +61,9 @@ class InferenceInput:
 
     upload_id: str
     user_id: str
-    raw_input: str
+    input_composition: str
+    input_num_formula_units_per_cell: str = ''
+    input_space_group: str = ''
     generate_cif: bool = False
     model_path: str = 'models/crystallm_v1_small/ckpt.pt'
     model_url: str = (

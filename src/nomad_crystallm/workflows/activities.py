@@ -20,10 +20,17 @@ async def get_model(data: InferenceModelInput):
 
 @activity.defn
 async def construct_model_input(data: InferenceInput) -> str:
-    # validates that the input is not empty
-    if not data.raw_input:
-        raise ValueError('Input data cannot be empty.')
-    return data.raw_input
+    from .llm import construct_prompt
+
+    # validates that the composition is not empty
+    if not data.input_composition:
+        raise ValueError('Composition for the prompt cannot be empty.')
+    # constructs the prompt for the model
+    return construct_prompt(
+        data.input_composition,
+        data.input_num_formula_units_per_cell,
+        data.input_space_group,
+    )
 
 
 @activity.defn

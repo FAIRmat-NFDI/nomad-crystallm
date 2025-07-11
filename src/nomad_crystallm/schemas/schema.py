@@ -2,7 +2,6 @@ import os
 
 from ase.io import read
 from ase.spacegroup import Spacegroup
-from crystallm import get_atomic_props_block_for_formula
 from matid import SymmetryAnalyzer
 from nomad.datamodel.data import ArchiveSection, EntryData, EntryDataCategory
 from nomad.datamodel.metainfo.annotations import (
@@ -362,11 +361,16 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
         Run the CrystaLLM inference workflow with the provided archive.
         Uses the first author's credentials to run the workflow.
         """
-        if not self.prompt:
+        if not self.composition:
             logger.warn(
-                'No prompt provided for the CrystaLLM inference workflow. '
+                'No composition provided for the CrystaLLM inference prompt. '
                 'Cannot run the workflow.'
             )
+            return
+        try:
+            Composition(self.composition)
+        except Exception as e:
+            logger.error(f'Invalid composition "{self.composition}": {e}')
             return
         if not archive.metadata.authors:
             logger.warn(
@@ -379,7 +383,9 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
         input_data = InferenceUserInput(
             user_id=archive.metadata.authors[0].user_id,
             upload_id=archive.metadata.upload_id,
-            raw_input=self.prompt,
+            input_composition=self.composition,
+            input_num_formula_units_per_cell=self.num_formula_units_per_cell,
+            input_space_group=self.space_group,
             generate_cif=True,
             model_path=f'models/{self.inference_settings.model}/ckpt.pt',
             model_url=(
@@ -405,46 +411,10 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
 
         self.triggered_inferences[-1].workflow_id = workflow_id
 
-    def construct_prompt(self, logger=None):
-        """
-        Construct the prompt for CrystaLLM inference based on the provided
-        composition, number of formula units per cell, and space group.
-        """
-        self.prompt = None
-        if not self.composition:
-            logger.warn('No composition provided for the CrystaLLM inference prompt.')
-            return
-        try:
-            comp = Composition(self.composition)
-        except Exception as e:
-            logger.error(f'Invalid composition "{self.composition}": {e}')
-            return
-
-        # replace the factor with provided number of formula units per cell
-        reduced_comp, factor = comp.get_reduced_composition_and_factor()
-        if self.num_formula_units_per_cell:
-            factor = int(self.num_formula_units_per_cell)
-        comp_with_provided_factor = reduced_comp * factor
-        comp_with_provided_factor_str = ''.join(
-            comp_with_provided_factor.formula.split()
-        )
-
-        if self.space_group:
-            space_group_str = ''.join(self.space_group.split())
-            self.prompt = (
-                f'data_{comp_with_provided_factor_str}\n'
-                f'{get_atomic_props_block_for_formula(comp_with_provided_factor_str)}\n'
-                f'_symmetry_space_group_name_H-M {space_group_str}\n'
-            )
-            return
-
-        self.prompt = f'data_{comp_with_provided_factor_str}\n'
-
     def normalize(self, archive, logger=None):
         """
         Normalize the CrystaLLM inference form section.
         This method ensures that the section is ready for processing.
         """
         self.m_setdefault('inference_settings')
-        self.construct_prompt(logger)
         super().normalize(archive, logger)
