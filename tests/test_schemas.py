@@ -16,7 +16,6 @@
 # limitations under the License.
 #
 import pytest
-from nomad.client import normalize_all, parse
 
 
 # TODO: activate the test only temporal-workflows branch is merged in nomad-FAIR
@@ -27,6 +26,8 @@ def test_inference_result(caplog):
     """
     Test the processing of system based on the CIF file.
     """
+    from nomad.client import normalize_all, parse
+
     archive = parse('tests/data/inference_result.archive.yaml')[0]
     normalize_all(archive)
 
