@@ -341,10 +341,6 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
         description='(Optional) Space group to be used for prompt.',
         a_eln=ELNAnnotation(component=ELNComponentEnum.AutocompleteEditQuantity),
     )
-    prompt = Quantity(
-        type=str,
-        description='Prompt to be used for inference.',
-    )
     inference_settings = SubSection(
         section_def=InferenceSettingsForm,
         description='Settings for the CrystaLLM inference workflow.',
@@ -368,7 +364,7 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
             )
             return
         try:
-            Composition(self.composition)
+            Composition(self.composition, strict=True)
         except Exception as e:
             logger.error(f'Invalid composition "{self.composition}": {e}')
             return
