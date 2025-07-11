@@ -15,9 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pytest
 from nomad.client import normalize_all, parse
 
 
+# TODO: activate the test only temporal-workflows branch is merged in nomad-FAIR
+@pytest.mark.skip(
+    'This test is skipped until the temporal-workflows branch is merged in nomad-FAIR'
+)
 def test_inference_result(caplog):
     """
     Test the processing of system based on the CIF file.
