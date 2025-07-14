@@ -380,8 +380,8 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
             user_id=archive.metadata.authors[0].user_id,
             upload_id=archive.metadata.upload_id,
             input_composition=self.composition,
-            input_num_formula_units_per_cell=self.num_formula_units_per_cell,
-            input_space_group=self.space_group,
+            input_num_formula_units_per_cell=self.num_formula_units_per_cell or '',
+            input_space_group=self.space_group or '',
             generate_cif=True,
             model_path=f'models/{self.inference_settings.model}/ckpt.pt',
             model_url=(
