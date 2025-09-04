@@ -18,18 +18,18 @@ from crystallm import (
     remove_atom_props_block,
     replace_symmetry_operators,
 )
+from nomad.actions.utils import get_upload_files
 from nomad.app.v1.routers.uploads import get_upload_with_read_access
 from nomad.datamodel import User
-from nomad.orchestrator.utils import get_upload_files
 from pymatgen.core import Composition
 
-from nomad_crystallm.schemas.schema import (
-    CrystaLLMInferenceResult,
-    InferenceSettings,
-)
 from nomad_crystallm.workflows.shared import (
     InferenceModelInput,
     InferenceResultsInput,
+)
+from nomad_crystallm.schemas.schema import (
+    CrystaLLMInferenceResult,
+    InferenceSettings,
 )
 
 if TYPE_CHECKING:

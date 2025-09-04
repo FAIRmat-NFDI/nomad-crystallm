@@ -1,6 +1,6 @@
 import os
 
-from nomad.orchestrator.utils import workflow_artifacts_dir
+from nomad.actions.utils import action_artifacts_dir
 from temporalio import activity
 
 from nomad_crystallm.workflows.shared import (
@@ -14,7 +14,7 @@ from nomad_crystallm.workflows.shared import (
 async def get_model(data: InferenceModelInput):
     from .llm import download_model
 
-    model_path = os.path.join(workflow_artifacts_dir(), data.model_path)
+    model_path = os.path.join(action_artifacts_dir(), data.model_path)
     await download_model(model_path, data.model_url)
 
 
@@ -37,7 +37,7 @@ async def construct_model_input(data: InferenceInput) -> str:
 async def run_inference(data: InferenceModelInput) -> list[str]:
     from .llm import evaluate_model
 
-    data.model_path = os.path.join(workflow_artifacts_dir(), data.model_path)
+    data.model_path = os.path.join(action_artifacts_dir(), data.model_path)
     return evaluate_model(data)
 
 

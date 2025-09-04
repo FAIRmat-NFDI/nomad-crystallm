@@ -16,7 +16,7 @@ with workflow.unsafe.imports_passed_through():
     )
 
 
-@workflow.defn(name='nomad_crystallm.workflows.InferenceWorkflow')
+@workflow.defn
 class InferenceWorkflow:
     @workflow.run
     async def run(self, data: InferenceInput) -> list[str]:

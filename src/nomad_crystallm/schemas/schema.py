@@ -3,6 +3,7 @@ import os
 from ase.io import read
 from ase.spacegroup import Spacegroup
 from matid import SymmetryAnalyzer
+from nomad.actions.utils import get_action_status, start_action
 from nomad.datamodel.data import ArchiveSection, EntryData, EntryDataCategory
 from nomad.datamodel.metainfo.annotations import (
     ELNAnnotation,
@@ -13,12 +14,10 @@ from nomad.datamodel.results import Material, Results, SymmetryNew, System
 from nomad.metainfo import Category, MEnum, Quantity, SchemaPackage, Section, SubSection
 from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
-from nomad.orchestrator import utils as orchestrator_utils
-from nomad.orchestrator.shared.constant import TaskQueue
 from pymatgen.core import Composition
 
-from nomad_crystallm.schemas.utils import get_reference_from_mainfile
 from nomad_crystallm.workflows.shared import InferenceUserInput
+from nomad_crystallm.schemas.utils import get_reference_from_mainfile
 
 SPACE_GROUPS = [Spacegroup(i).symbol for i in range(1, 231)]
 
@@ -293,7 +292,7 @@ class InferenceStatus(ArchiveSection):
         super().normalize(archive, logger)
         if not self.status or self.status == 'RUNNING' or self.trigger_get_status:
             try:
-                status = orchestrator_utils.get_workflow_status(self.workflow_id)
+                status = get_action_status(self.workflow_id)
                 if status:
                     self.status = status.name
             except Exception as e:
@@ -396,10 +395,8 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
             dtype=self.inference_settings.dtype,
             compile=self.inference_settings.compile,
         )
-        workflow_name = 'nomad_crystallm.workflows.InferenceWorkflow'
-        workflow_id = orchestrator_utils.start_workflow(
-            workflow_name=workflow_name, data=input_data, task_queue=TaskQueue.GPU
-        )
+        workflow_name = 'nomad_crystallm.workflows:crystallm_inference'
+        workflow_id = start_action(action_id=workflow_name, data=input_data)
         if not self.triggered_inferences:
             self.triggered_inferences = [InferenceStatus()]
         else:
