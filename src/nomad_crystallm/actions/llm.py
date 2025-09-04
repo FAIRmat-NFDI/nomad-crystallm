@@ -23,7 +23,7 @@ from nomad.app.v1.routers.uploads import get_upload_with_read_access
 from nomad.datamodel import User
 from pymatgen.core import Composition
 
-from nomad_crystallm.workflows.shared import (
+from nomad_crystallm.actions.shared import (
     InferenceModelInput,
     InferenceResultsInput,
 )

@@ -3,13 +3,13 @@ from datetime import timedelta
 from temporalio import workflow
 
 with workflow.unsafe.imports_passed_through():
-    from nomad_crystallm.workflows.activities import (
+    from nomad_crystallm.actions.activities import (
         construct_model_input,
         get_model,
         run_inference,
         write_results,
     )
-    from nomad_crystallm.workflows.shared import (
+    from nomad_crystallm.actions.shared import (
         InferenceInput,
         InferenceModelInput,
         InferenceResultsInput,

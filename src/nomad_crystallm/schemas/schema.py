@@ -16,7 +16,7 @@ from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
 from pymatgen.core import Composition
 
-from nomad_crystallm.workflows.shared import InferenceUserInput
+from nomad_crystallm.actions.shared import InferenceUserInput
 from nomad_crystallm.schemas.utils import get_reference_from_mainfile
 
 SPACE_GROUPS = [Spacegroup(i).symbol for i in range(1, 231)]
@@ -395,7 +395,7 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
             dtype=self.inference_settings.dtype,
             compile=self.inference_settings.compile,
         )
-        workflow_name = 'nomad_crystallm.workflows:crystallm_inference'
+        workflow_name = 'nomad_crystallm.actions:crystallm_inference'
         workflow_id = start_action(action_id=workflow_name, data=input_data)
         if not self.triggered_inferences:
             self.triggered_inferences = [InferenceStatus()]

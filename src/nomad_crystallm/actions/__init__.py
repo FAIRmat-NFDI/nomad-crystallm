@@ -18,13 +18,13 @@ class CrystaLLMInferenceEntryPoint(ActionEntryPoint):
     def load(self):
         from nomad.actions import Action
 
-        from nomad_crystallm.workflows.activities import (
+        from nomad_crystallm.actions.activities import (
             construct_model_input,
             get_model,
             run_inference,
             write_results,
         )
-        from nomad_crystallm.workflows.workflow import InferenceWorkflow
+        from nomad_crystallm.actions.workflow import InferenceWorkflow
 
         return Action(
             task_queue=self.task_queue,
