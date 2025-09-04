@@ -3,6 +3,7 @@ import os
 from ase.io import read
 from ase.spacegroup import Spacegroup
 from matid import SymmetryAnalyzer
+from nomad.actions.utils import get_action_status, start_action
 from nomad.datamodel.data import ArchiveSection, EntryData, EntryDataCategory
 from nomad.datamodel.metainfo.annotations import (
     ELNAnnotation,
@@ -13,53 +14,29 @@ from nomad.datamodel.results import Material, Results, SymmetryNew, System
 from nomad.metainfo import Category, MEnum, Quantity, SchemaPackage, Section, SubSection
 from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
-from nomad.orchestrator import utils as orchestrator_utils
-from nomad.orchestrator.shared.constant import TaskQueue
 from pymatgen.core import Composition
 
+from nomad_crystallm.actions.shared import InferenceUserInput
 from nomad_crystallm.schemas.utils import get_reference_from_mainfile
-from nomad_crystallm.workflows.shared import InferenceUserInput
 
 SPACE_GROUPS = [Spacegroup(i).symbol for i in range(1, 231)]
 
 m_package = SchemaPackage()
 
 
-class InferenceCategory(EntryDataCategory):
-    """Category for inference workflows."""
+class ActionCategory(EntryDataCategory):
+    """
+    Category for schemas that can be used to run NOMAD Actions from ELN interface.
+    """
 
-    m_def = Category(label='Inference Workflows', categories=[EntryDataCategory])
-
-
-class RunWorkflowAction(ArchiveSection):
-    """Abstract section to run inference workflows"""
-
-    trigger_run_workflow = Quantity(
-        type=bool,
-        description='Starts an asynchronous workflow for running the inference.',
-        a_eln=ELNAnnotation(
-            component=ELNComponentEnum.ActionEditQuantity,
-            label='Run Inference Workflow',
-        ),
+    m_def = Category(
+        label='Run NOMAD Actions from ELN',
+        categories=[EntryDataCategory],
     )
-
-    def run_workflow(self, archive, logger=None):
-        """Run the workflow with the provided archive."""
-        raise NotImplementedError('This method should be implemented in subclasses.')
-
-    def normalize(self, archive, logger=None):
-        """Normalize the section to ensure it is ready for processing."""
-        super().normalize(archive, logger)
-        if self.trigger_run_workflow:
-            try:
-                self.run_workflow(archive, logger)
-            except Exception as e:
-                logger.error(f'Error running workflow: {e}. ')
-            self.trigger_run_workflow = False
 
 
 class InferenceSettings(ArchiveSection):
-    """Settings for CrystaLLM inference workflows."""
+    """Settings for CrystaLLM inference actions."""
 
     model = Quantity(
         type=MEnum(
@@ -109,7 +86,7 @@ class InferenceSettings(ArchiveSection):
 
 
 class CrystaLLMInferenceResult(EntryData):
-    """Result of a CrystaLLM inference workflow."""
+    """Result of a CrystaLLM inference action."""
 
     m_def = Section(
         label='CrystaLLM Inference Result',
@@ -117,9 +94,8 @@ class CrystaLLMInferenceResult(EntryData):
             properties=SectionProperties(
                 order=[
                     'prompt',
-                    'workflow_id',
+                    'action_id',
                     'status',
-                    'trigger_workflow_status',
                     'generated_cifs',
                     'generated_structures',
                     'inference_settings',
@@ -131,9 +107,9 @@ class CrystaLLMInferenceResult(EntryData):
         type=str,
         description='Prompt to be used for inference.',
     )
-    workflow_id = Quantity(
+    action_id = Quantity(
         type=str,
-        description='ID of the `temporalio` workflow.',
+        description='ID of the inference action.',
     )
     generated_cifs = Quantity(
         type=str,
@@ -147,7 +123,7 @@ class CrystaLLMInferenceResult(EntryData):
     )
     inference_settings = SubSection(
         section_def=InferenceSettings,
-        description='Settings used for the CrystaLLM inference workflow.',
+        description='Settings used for the inference action.',
     )
 
     def process_generated_cifs(self, archive, logger):
@@ -169,7 +145,7 @@ class CrystaLLMInferenceResult(EntryData):
                 except Exception as e:
                     logger.error(f'Unable to read cif: {cif}. Encounter the error: {e}')
                     continue
-            # populate elemets from a set of all the elemsts in ase_atoms
+            # populate elements from a set of all the elements in ase_atoms
             elements.update(ase_atoms.get_chemical_symbols())
             symmetry = SymmetryNew()
             symmetry_analyzer = SymmetryAnalyzer(ase_atoms, symmetry_tol=1)
@@ -185,8 +161,8 @@ class CrystaLLMInferenceResult(EntryData):
             system = System(
                 atoms=nomad_atoms_from_ase_atoms(ase_atoms),
                 label=label,
-                description='Structure generated by CrystaLLM with workflow_id: '
-                f'"{self.workflow_id}"',
+                description='Structure generated by CrystaLLM with action_id: '
+                f'"{self.action_id}"',
                 structural_type='bulk',
                 dimensionality='3D',
                 symmetry=symmetry,
@@ -212,7 +188,7 @@ class CrystaLLMInferenceResult(EntryData):
 
 
 class InferenceSettingsForm(ArchiveSection):
-    """Settings used for CrystaLLM inference workflows with editable fields."""
+    """Settings used for CrystaLLM inference action with editable fields."""
 
     model = InferenceSettings.model.m_copy(deep=True)
     model.default = 'crystallm_v1_small'
@@ -264,63 +240,67 @@ class InferenceSettingsForm(ArchiveSection):
 
 
 class InferenceStatus(ArchiveSection):
-    """Section to fetch the status of an inference workflow."""
+    """Section to fetch the status of an inference action."""
 
-    workflow_id = Quantity(
+    action_id = Quantity(
         type=str,
-        description='ID of the `temporalio` workflow.',
+        description='ID of the inference action.',
     )
     status = Quantity(
         type=str,
-        description='Status of the inference workflow.',
+        description='Status of the inference action.',
     )
     generated_entry = Quantity(
         type=CrystaLLMInferenceResult,
-        description='Reference to the generated entry after the workflow completes.',
+        description='Reference to the generated entry after the action completes.',
     )
-    trigger_get_status = Quantity(
+    trigger_get_action_status = Quantity(
         type=bool,
         default=False,
-        description='Retrieve the current status of the inference workflow.',
+        description='Retrieves the status of the inference action using action ID.',
         a_eln=ELNAnnotation(
             component=ELNComponentEnum.ActionEditQuantity,
-            label='Get Workflow Status',
+            label='Get Action Status',
         ),
     )
 
     def normalize(self, archive, logger=None):
         """Normalize the section to ensure it is ready for processing."""
         super().normalize(archive, logger)
-        if not self.status or self.status == 'RUNNING' or self.trigger_get_status:
+        if (
+            not self.status
+            or self.status == 'RUNNING'
+            or self.trigger_get_action_status
+        ):
             try:
-                status = orchestrator_utils.get_workflow_status(self.workflow_id)
+                status = get_action_status(self.action_id)
                 if status:
                     self.status = status.name
             except Exception as e:
-                logger.error(f'Error getting workflow status: {e}. ')
+                logger.error(f'Error getting action status: {e}. ')
             finally:
-                self.trigger_get_status = False
+                self.trigger_get_action_status = False
             if self.status == 'COMPLETED':
                 reference = get_reference_from_mainfile(
                     archive.metadata.upload_id,
-                    os.path.join(self.workflow_id, 'inference_result.archive.json'),
+                    os.path.join(self.action_id, 'inference_result.archive.json'),
                 )
                 if not reference:
                     logger.error(
                         'Unable to set reference for the generated entry for '
-                        f'workflow {self.workflow_id}.'
+                        f'action {self.action_id}.'
                     )
                 else:
                     self.generated_entry = reference
 
 
-class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
-    """Inference form for running CrystaLLM inference workflows."""
+class CrystaLLMInferenceForm(EntryData):
+    """Inference form for running CrystaLLM inference actions."""
 
     m_def = Section(
-        a_eln=ELNAnnotation(
-            label='CrystaLLM Inference Form',
-        )
+        label='CrystaLLM Inference Form',
+        categories=[ActionCategory],
+        description='Form to run CrystaLLM inference actions from the ELN interface.',
     )
 
     # TODO: Add field to upload a file containing multiple prompts.
@@ -341,26 +321,34 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
         description='(Optional) Space group to be used for prompt.',
         a_eln=ELNAnnotation(component=ELNComponentEnum.AutocompleteEditQuantity),
     )
+    trigger_run_action = Quantity(
+        type=bool,
+        description='Triggers the action defined under `run_action` method.',
+        a_eln=ELNAnnotation(
+            component=ELNComponentEnum.ActionEditQuantity,
+            label='Run Inference Action',
+        ),
+    )
     inference_settings = SubSection(
         section_def=InferenceSettingsForm,
-        description='Settings for the CrystaLLM inference workflow.',
+        description='Settings for the CrystaLLM inference action.',
     )
     triggered_inferences = SubSection(
         section_def=InferenceStatus,
         description='A section for storing the status of the triggered inference '
-        'workflow.',
+        'action.',
         repeats=True,
     )
 
-    def run_workflow(self, archive, logger=None):
+    def run_action(self, archive, logger=None):
         """
-        Run the CrystaLLM inference workflow with the provided archive.
-        Uses the first author's credentials to run the workflow.
+        Run the CrystaLLM inference action with the provided archive.
+        Uses the first author's credentials to run the action.
         """
         if not self.composition:
             logger.warn(
                 'No composition provided for the CrystaLLM inference prompt. '
-                'Cannot run the workflow.'
+                'Cannot run the action.'
             )
             return
         try:
@@ -371,7 +359,7 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
         if not archive.metadata.authors:
             logger.warn(
                 'No authors found in the archive metadata. '
-                'Cannot run CrystaLLM inference workflow.'
+                'Cannot run CrystaLLM inference action.'
             )
             return
         if not self.inference_settings:
@@ -396,21 +384,26 @@ class CrystaLLMInferenceForm(RunWorkflowAction, EntryData):
             dtype=self.inference_settings.dtype,
             compile=self.inference_settings.compile,
         )
-        workflow_name = 'nomad_crystallm.workflows.InferenceWorkflow'
-        workflow_id = orchestrator_utils.start_workflow(
-            workflow_name=workflow_name, data=input_data, task_queue=TaskQueue.GPU
+        action_instance_id = start_action(
+            action_id='nomad_crystallm.actions:crystallm_inference', data=input_data
         )
         if not self.triggered_inferences:
             self.triggered_inferences = [InferenceStatus()]
         else:
             self.triggered_inferences.append(InferenceStatus())
 
-        self.triggered_inferences[-1].workflow_id = workflow_id
+        self.triggered_inferences[-1].action_id = action_instance_id
 
     def normalize(self, archive, logger=None):
         """
-        Normalize the CrystaLLM inference form section.
-        This method ensures that the section is ready for processing.
+        Sets a default for inference_settings if not provided and runs the action
+        if trigger_run_action is True.
         """
         self.m_setdefault('inference_settings')
+        if self.trigger_run_action:
+            try:
+                self.run_action(archive, logger)
+            except Exception as e:
+                logger.error(f'Error running action: {e}. ')
+            self.trigger_run_action = False
         super().normalize(archive, logger)

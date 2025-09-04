@@ -18,18 +18,18 @@ from crystallm import (
     remove_atom_props_block,
     replace_symmetry_operators,
 )
+from nomad.actions.utils import get_upload_files
 from nomad.app.v1.routers.uploads import get_upload_with_read_access
 from nomad.datamodel import User
-from nomad.orchestrator.utils import get_upload_files
 from pymatgen.core import Composition
 
+from nomad_crystallm.actions.shared import (
+    InferenceModelInput,
+    InferenceResultsInput,
+)
 from nomad_crystallm.schemas.schema import (
     CrystaLLMInferenceResult,
     InferenceSettings,
-)
-from nomad_crystallm.workflows.shared import (
-    InferenceModelInput,
-    InferenceResultsInput,
 )
 
 if TYPE_CHECKING:
@@ -237,7 +237,7 @@ def write_entry_archive(cif_paths, result: InferenceResultsInput) -> str:
     )
     inference_result = CrystaLLMInferenceResult(
         prompt=result.model_data.raw_input,
-        workflow_id=result.cif_dir,
+        action_id=result.cif_dir,
         generated_cifs=cif_paths,
         inference_settings=InferenceSettings(
             model=result.model_data.model_url.rsplit('/', 1)[-1].split('.tar.gz')[0],
