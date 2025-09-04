@@ -237,7 +237,7 @@ def write_entry_archive(cif_paths, result: InferenceResultsInput) -> str:
     )
     inference_result = CrystaLLMInferenceResult(
         prompt=result.model_data.raw_input,
-        workflow_id=result.cif_dir,
+        action_id=result.cif_dir,
         generated_cifs=cif_paths,
         inference_settings=InferenceSettings(
             model=result.model_data.model_url.rsplit('/', 1)[-1].split('.tar.gz')[0],
