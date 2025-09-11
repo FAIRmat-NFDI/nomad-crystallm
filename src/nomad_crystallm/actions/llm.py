@@ -278,6 +278,20 @@ def write_entry_archive(cif_paths, result: InferenceResultsInput) -> str:
         ),
     )
     fname = os.path.join(f'crystallm_{result.composition}.archive.json')
+    timer = 0
+    max_timer = 10
+    while True:
+        if os.path.exists(fname):
+            # wait if the same file exists and is being used by another process
+            if timer > max_timer:
+                raise FileExistsError(
+                    f'File "{fname}" already exists and could not be written to '
+                    'after several attempts.'
+                )
+            timer += 1
+            time.sleep(timer)
+        else:
+            break
     with open(os.path.join(fname), 'w', encoding='utf-8') as f:
         json.dump({'data': inference_result.m_to_dict(with_root_def=True)}, f, indent=4)
     upload.process_upload(
