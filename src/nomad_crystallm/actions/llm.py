@@ -18,7 +18,7 @@ from crystallm import (
     remove_atom_props_block,
     replace_symmetry_operators,
 )
-from nomad.actions.utils import get_upload_files
+from nomad.actions.utils import action_artifacts_dir, get_upload_files
 from nomad.app.v1.routers.uploads import get_upload_with_read_access
 from nomad.datamodel import User
 from pymatgen.core import Composition
@@ -36,12 +36,32 @@ if TYPE_CHECKING:
     from logging import LoggerAdapter
 BLOCK_SIZE = 1024
 
+model_data = {
+    'crystallm_v1_small': {
+        'model_path': 'models/crystallm_v1_small/ckpt.pt',
+        'model_url': (
+            'https://zenodo.org/records/10642388/files/crystallm_v1_small.tar.gz'
+        ),
+    },
+    'crystallm_v1_large': {
+        'model_path': 'models/crystallm_v1_large/ckpt.pt',
+        'model_url': (
+            'https://zenodo.org/records/10642388/files/crystallm_v1_large.tar.gz'
+        ),
+    },
+}
 
-async def download_model(model_path: str, model_url: str | None = None) -> dict:
+
+async def download_model(model_name: str) -> dict:
     """
     Checks if the model file exists locally, and if not, downloads it from the
     provided URL.
     """
+    model_path = model_data[model_name]['model_path']
+    model_url = model_data[model_name]['model_url']
+
+    model_path = os.path.join(action_artifacts_dir(), model_path)
+
     # Check if file exists asynchronously
     exists = await asyncio.to_thread(os.path.exists, model_path)
     if not exists and not model_url:

@@ -1,5 +1,94 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Literal
+
+from pydantic import BaseModel, Field
+
+
+class PromptGenerationInput(BaseModel):
+    input_composition: str = Field(
+        ..., description='Composition to use as a prompt for the model.'
+    )
+    input_num_formula_units_per_cell: NumFormulaUnitsPerCell = Field(
+        '', description='Number of formula units per cell.'
+    )
+    input_space_group: SpaceGroupLiteral = Field(
+        '', description='Space group to use in the prompt.'
+    )
+
+
+class InferenceSettingsInput(BaseModel):
+    model_name: Literal['crystallm_v1_small', 'crystallm_v1_large'] = Field(
+        'crystallm_v1_small', description='Name of the model to use.'
+    )
+    num_samples: int = Field(2, description='Number of samples to generate.')
+    max_new_tokens: int = Field(
+        3000, description='Maximum number of tokens to generate.'
+    )
+    temperature: float = Field(0.8, description='Temperature for sampling.')
+    top_k: int = Field(10, description='Top-k sampling.')
+    seed: int = Field(1337, description='Random seed for reproducibility.')
+    dtype: Literal['bfloat16', 'float16', 'float32'] = Field(
+        'bfloat16', description='Data type for the model (based on PyTorch data types).'
+    )
+    compile: bool = Field(
+        False, description='Whether to compile the model for faster inference.'
+    )
+    generate_cif: bool = Field(
+        True, description='If True, the model will generate CIF files.'
+    )
+
+
+class InferenceUserInput(BaseModel):
+    upload_id: str = Field(..., description='ID of the NOMAD upload to save results.')
+    user_id: str = Field(..., description='ID of the user making the request.')
+    prompt_generation_inputs: list[PromptGenerationInput] = Field(
+        ...,
+        description='List of prompt generation inputs.',
+        title='Prompt Generation Inputs',
+    )
+    inference_settings: InferenceSettingsInput = Field(
+        ..., description='Inference settings for the model.', title='Inference Settings'
+    )
+
+
+@dataclass
+class InferenceModelInput:
+    """
+    Model input data for the inference workflow.
+
+    Attributes:
+
+    - prompts: List of prompts to use for the model.
+    - inference_settings: Settings for the model inference.
+    """
+
+    prompts: list[str]
+    inference_settings: InferenceSettingsInput
+
+
+@dataclass
+class InferenceResultsInput:
+    """
+    CIF Results input data for the inference workflow.
+
+    Attributes:
+    - upload_id: If generate_cif, write the generate CIF files to the upload.
+    - user_id: User making the request
+    - generate_cif: If True, the model will generate CIF files.
+    - generated_samples: List to store generated samples from the model.
+    - cif_dir: Directory to save CIF files. If empty, uses the upload's raw directory.
+    - cif_prefix: Prefix for the generated CIF files: <cif_prefix>_<index>.cif
+    """
+
+    upload_id: str
+    user_id: str
+    generated_samples: list[str]
+    generate_cif: bool
+    model_data: InferenceModelInput
+    cif_dir: str = ''  # empty string means the upload's raw directory
+    cif_prefix: str = 'sample'
 
 
 SpaceGroupLiteral = Literal[
@@ -236,104 +325,4 @@ SpaceGroupLiteral = Literal[
     'I a -3 d',
 ]
 
-NumFormulaUnitsPerCell = Literal(['1', '2', '3', '4', '6', '8'])
-
-
-@dataclass
-class PromptGenerationInput:
-    """
-    Input data for the prompt generation workflow.
-
-    Attributes:
-    - input_composition: Composition to use as a prompt for the model.
-    - input_num_formula_units_per_cell: Number of formula units per cell.
-    - input_space_group: Space group to use in the prompt.
-    """
-
-    input_composition: str
-    input_num_formula_units_per_cell: str = ''
-    input_space_group: SpaceGroupLiteral = ''
-
-
-@dataclass
-class InferenceSettingsInput:
-    model_path: str = 'models/crystallm_v1_small/ckpt.pt'
-    model_url: str = (
-        'https://zenodo.org/records/10642388/files/crystallm_v1_small.tar.gz'
-    )
-    num_samples: int = 2
-    max_new_tokens: int = 3000
-    temperature: float = 0.8
-    top_k: int = 10
-    seed: int = 1337
-    dtype: str = 'bfloat16'
-    compile: bool = False
-    generate_cif: bool = True
-
-
-@dataclass
-class InferenceUserInput:
-    """
-    User input data for the inference workflow.
-
-    Attributes:
-    - input_composition: Composition to use as a prompt for the model.
-    - input_num_formula_units_per_cell: Number of formula units per cell.
-    - input_space_group: Space group to use in the prompt.
-    - user_id: User making the request
-    - upload_id: If `generate_cif` is set to True, save CIF files to this upload.
-    - generate_cif: If True, the model will generate CIF files.
-    """
-
-    upload_id: str
-    user_id: str
-    prompt_generation_inputs: list[PromptGenerationInput]
-    inference_settings: InferenceSettingsInput
-
-
-@dataclass
-class InferenceModelInput:
-    """
-    Model input data for the inference workflow.
-
-    Attributes:
-
-    - model_path: Path to the model file.
-    - model_url: URL to download the model if not available locally.
-    - raw_input: Raw input string to use as a prompt.
-    - num_samples: Number of samples to draw during inference.
-    - max_new_tokens: Maximum number of tokens to generate in each sample.
-    - temperature: Controls the randomness of predictions. Lower values make the
-        model more deterministic, while higher values increase randomness.
-    - top_k: Retain only the top_k most likely tokens, clamp others to have 0
-        probability.
-    - seed: Random seed for reproducibility.
-    - dtype: Data type for the model (e.g., 'float32', 'bfloat16', 'float16').
-    - compile: Whether to compile the model for faster inference.
-    """
-
-    prompts: list[str]
-    inference_settings: InferenceSettingsInput
-
-
-@dataclass
-class InferenceResultsInput:
-    """
-    CIF Results input data for the inference workflow.
-
-    Attributes:
-    - upload_id: If generate_cif, write the generate CIF files to the upload.
-    - user_id: User making the request
-    - generate_cif: If True, the model will generate CIF files.
-    - generated_samples: List to store generated samples from the model.
-    - cif_dir: Directory to save CIF files. If empty, uses the upload's raw directory.
-    - cif_prefix: Prefix for the generated CIF files: <cif_prefix>_<index>.cif
-    """
-
-    upload_id: str
-    user_id: str
-    generated_samples: list[str]
-    generate_cif: bool
-    model_data: InferenceModelInput
-    cif_dir: str = ''  # empty string means the upload's raw directory
-    cif_prefix: str = 'sample'
+NumFormulaUnitsPerCell = Literal['', '1', '2', '3', '4', '6', '8']

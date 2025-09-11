@@ -14,10 +14,7 @@ from nomad_crystallm.actions.shared import (
 async def get_model(data: InferenceModelInput):
     from .llm import download_model
 
-    model_path = os.path.join(
-        action_artifacts_dir(), data.inference_settings.model_path
-    )
-    await download_model(model_path, data.inference_settings.model_url)
+    await download_model(data.inference_settings.model_name)
 
 
 @activity.defn

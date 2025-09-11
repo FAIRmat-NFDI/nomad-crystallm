@@ -33,4 +33,9 @@ class CrystaLLMInferenceEntryPoint(ActionEntryPoint):
         )
 
 
-crystallm_inference = CrystaLLMInferenceEntryPoint(name='CrystaLLM Inference')
+crystallm_inference = CrystaLLMInferenceEntryPoint(
+    name='CrystaLLM Inference',
+    plugin_package='FAIRmat-NFDI/nomad-crystallm',
+    description='Perform inference using the CrystaLLM model to generate crystal '
+    'structures from chemical compositions.',
+)
