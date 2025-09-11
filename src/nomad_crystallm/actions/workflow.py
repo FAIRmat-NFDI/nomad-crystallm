@@ -10,32 +10,24 @@ with workflow.unsafe.imports_passed_through():
         write_results,
     )
     from nomad_crystallm.actions.shared import (
-        InferenceInput,
         InferenceModelInput,
         InferenceResultsInput,
+        InferenceUserInput,
     )
 
 
 @workflow.defn
 class InferenceWorkflow:
     @workflow.run
-    async def run(self, data: InferenceInput) -> list[str]:
+    async def run(self, data: InferenceUserInput) -> list[str]:
         constructed_model_input = await workflow.execute_activity(
             construct_model_input,
             data,
             start_to_close_timeout=timedelta(seconds=60),
         )
         model_data = InferenceModelInput(
-            raw_input=constructed_model_input,
-            model_path=data.model_path,
-            model_url=data.model_url,
-            num_samples=data.num_samples,
-            max_new_tokens=data.max_new_tokens,
-            temperature=data.temperature,
-            top_k=data.top_k,
-            seed=data.seed,
-            dtype=data.dtype,
-            compile=data.compile,
+            prompts=constructed_model_input,
+            inference_settings=data.inference_settings,
         )
         await workflow.execute_activity(
             get_model,

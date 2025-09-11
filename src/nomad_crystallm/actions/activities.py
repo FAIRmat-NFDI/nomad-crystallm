@@ -4,9 +4,9 @@ from nomad.actions.utils import action_artifacts_dir
 from temporalio import activity
 
 from nomad_crystallm.actions.shared import (
-    InferenceInput,
     InferenceModelInput,
     InferenceResultsInput,
+    InferenceUserInput,
 )
 
 
@@ -14,23 +14,30 @@ from nomad_crystallm.actions.shared import (
 async def get_model(data: InferenceModelInput):
     from .llm import download_model
 
-    model_path = os.path.join(action_artifacts_dir(), data.model_path)
-    await download_model(model_path, data.model_url)
+    model_path = os.path.join(
+        action_artifacts_dir(), data.inference_settings.model_path
+    )
+    await download_model(model_path, data.inference_settings.model_url)
 
 
 @activity.defn
-async def construct_model_input(data: InferenceInput) -> str:
+async def construct_model_input(data: InferenceUserInput) -> str:
     from .llm import construct_prompt
 
     # validates that the composition is not empty
     if not data.input_composition:
         raise ValueError('Composition for the prompt cannot be empty.')
     # constructs the prompt for the model
-    return construct_prompt(
-        data.input_composition,
-        data.input_num_formula_units_per_cell,
-        data.input_space_group,
-    )
+    prompts = []
+    for prompt_generation_input in data.prompt_generation_inputs:
+        prompts.append(
+            construct_prompt(
+                prompt_generation_input.input_composition,
+                prompt_generation_input.input_num_formula_units_per_cell,
+                prompt_generation_input.input_space_group,
+            )
+        )
+    return prompts
 
 
 @activity.defn

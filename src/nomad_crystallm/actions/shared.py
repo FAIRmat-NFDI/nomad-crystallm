@@ -1,4 +1,47 @@
 from dataclasses import dataclass
+from enum import Enum
+
+from ase.spacegroup import Spacegroup
+
+SPACE_GROUPS = [Spacegroup(i).symbol for i in range(1, 231)]
+
+SpaceGroupEnum = Enum(
+    'SpaceGroupEnum',
+    {symbol.replace(' ', ''): symbol for symbol in SPACE_GROUPS},
+    type=str,
+)
+
+
+@dataclass
+class PromptGenerationInput:
+    """
+    Input data for the prompt generation workflow.
+
+    Attributes:
+    - input_composition: Composition to use as a prompt for the model.
+    - input_num_formula_units_per_cell: Number of formula units per cell.
+    - input_space_group: Space group to use in the prompt.
+    """
+
+    input_composition: str
+    input_num_formula_units_per_cell: str = ''
+    input_space_group: SpaceGroupEnum | str = ''
+
+
+@dataclass
+class InferenceSettingsInput:
+    model_path: str = 'models/crystallm_v1_small/ckpt.pt'
+    model_url: str = (
+        'https://zenodo.org/records/10642388/files/crystallm_v1_small.tar.gz'
+    )
+    num_samples: int = 2
+    max_new_tokens: int = 3000
+    temperature: float = 0.8
+    top_k: int = 10
+    seed: int = 1337
+    dtype: str = 'bfloat16'
+    compile: bool = False
+    generate_cif: bool = False
 
 
 @dataclass
@@ -17,65 +60,8 @@ class InferenceUserInput:
 
     upload_id: str
     user_id: str
-    input_composition: str
-    input_num_formula_units_per_cell: str = ''
-    input_space_group: str = ''
-    generate_cif: bool = False
-    model_path: str = 'models/crystallm_v1_small/ckpt.pt'
-    model_url: str = (
-        'https://zenodo.org/records/10642388/files/crystallm_v1_small.tar.gz'
-    )
-    num_samples: int = 2
-    max_new_tokens: int = 3000
-    temperature: float = 0.8
-    top_k: int = 10
-    seed: int = 1337
-    dtype: str = 'bfloat16'
-    compile: bool = False
-
-
-@dataclass
-class InferenceInput:
-    """
-    User input data for the inference workflow.
-
-    Attributes:
-    - input_composition: The composition to use as a prompt.
-    - input_num_formula_units_per_cell: Number of formula units per cell.
-    - input_space_group: Space group of the composition.
-    - user_id: User making the request
-    - upload_id: If `generate_cif` is set to True, save CIF files to this upload.
-    - generate_cif: If True, the model will generate CIF files.
-    - model_path: Path to the model file.
-    - model_url: URL to download the model if not available locally.
-    - num_samples: Number of samples to draw during inference.
-    - max_new_tokens: Maximum number of tokens to generate in each sample.
-    - temperature: Controls the randomness of predictions. Lower values make the
-        model more deterministic, while higher values increase randomness.
-    - top_k: Retain only the top_k most likely tokens, clamp others to have 0
-        probability.
-    - seed: Random seed for reproducibility.
-    - dtype: Data type for the model (e.g., 'float32', 'bfloat16', 'float16').
-    - compile: Whether to compile the model for faster inference.
-    """
-
-    upload_id: str
-    user_id: str
-    input_composition: str
-    input_num_formula_units_per_cell: str = ''
-    input_space_group: str = ''
-    generate_cif: bool = False
-    model_path: str = 'models/crystallm_v1_small/ckpt.pt'
-    model_url: str = (
-        'https://zenodo.org/records/10642388/files/crystallm_v1_small.tar.gz'
-    )
-    num_samples: int = 2
-    max_new_tokens: int = 3000
-    temperature: float = 0.8
-    top_k: int = 10
-    seed: int = 1337
-    dtype: str = 'bfloat16'
-    compile: bool = False
+    prompt_generation_inputs: list[PromptGenerationInput]
+    inference_settings: InferenceSettingsInput
 
 
 @dataclass
@@ -99,18 +85,8 @@ class InferenceModelInput:
     - compile: Whether to compile the model for faster inference.
     """
 
-    raw_input: str
-    model_path: str = 'models/crystallm_v1_small/ckpt.pt'
-    model_url: str = (
-        'https://zenodo.org/records/10642388/files/crystallm_v1_small.tar.gz'
-    )
-    num_samples: int = 2
-    max_new_tokens: int = 3000
-    temperature: float = 0.8
-    top_k: int = 10
-    seed: int = 1337
-    dtype: str = 'bfloat16'
-    compile: bool = False
+    prompts: list[str]
+    inference_settings: InferenceSettingsInput
 
 
 @dataclass

@@ -33,4 +33,4 @@ class CrystaLLMInferenceEntryPoint(ActionEntryPoint):
         )
 
 
-crystallm_inference = CrystaLLMInferenceEntryPoint()
+crystallm_inference = CrystaLLMInferenceEntryPoint(name='CrystaLLM Inference')

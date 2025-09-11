@@ -118,8 +118,8 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[str]:
     Evaluate the model with the given parameters.
     Adapted from https://github.com/lantunes/CrystaLLM
     """
-    torch.manual_seed(inference_state.seed)
-    torch.cuda.manual_seed(inference_state.seed)
+    torch.manual_seed(inference_state.inference_settings.seed)
+    torch.cuda.manual_seed(inference_state.inference_settings.seed)
     torch.backends.cuda.matmul.allow_tf32 = True  # allow tf32 on matmul
     torch.backends.cudnn.allow_tf32 = True  # allow tf32 on cudnn
     device = (
@@ -129,7 +129,7 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[str]:
         'float32': torch.float32,
         'bfloat16': torch.bfloat16,
         'float16': torch.float16,
-    }[inference_state.dtype]
+    }[inference_state.inference_settings.dtype]
     ctx = (
         nullcontext()
         if device == 'cpu'
@@ -140,7 +140,9 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[str]:
     encode = tokenizer.encode
     decode = tokenizer.decode
 
-    checkpoint = torch.load(inference_state.model_path, map_location=device)
+    checkpoint = torch.load(
+        inference_state.inference_settings.model_path, map_location=device
+    )
     gptconf = GPTConfig(**checkpoint['model_args'])
     model = GPT(gptconf)
     state_dict = checkpoint['model']
@@ -152,11 +154,11 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[str]:
 
     model.eval()
     model.to(device)
-    if inference_state.compile:
+    if inference_state.inference_settings.compile:
         model = torch.compile(model)
 
     # encode the beginning of the prompt
-    prompt = inference_state.raw_input
+    prompt = inference_state.prompts
     start_ids = encode(tokenizer.tokenize_cif(prompt))
     x = torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...]
 
@@ -164,12 +166,12 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[str]:
     generated = []
     with torch.no_grad():
         with ctx:
-            for k in range(inference_state.num_samples):
+            for k in range(inference_state.inference_settings.num_samples):
                 y = model.generate(
                     x,
-                    inference_state.max_new_tokens,
-                    temperature=inference_state.temperature,
-                    top_k=inference_state.top_k,
+                    inference_state.inference_settings.max_new_tokens,
+                    temperature=inference_state.inference_settings.temperature,
+                    top_k=inference_state.inference_settings.top_k,
                 )
                 generated.append(decode(y[0].tolist()))
 
@@ -236,7 +238,7 @@ def write_entry_archive(cif_paths, result: InferenceResultsInput) -> str:
         include_others=True,
     )
     inference_result = CrystaLLMInferenceResult(
-        prompt=result.model_data.raw_input,
+        prompt=result.model_data.prompts,
         action_id=result.cif_dir,
         generated_cifs=cif_paths,
         inference_settings=InferenceSettings(
