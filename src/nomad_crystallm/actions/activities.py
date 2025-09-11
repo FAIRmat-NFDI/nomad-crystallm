@@ -47,7 +47,7 @@ async def run_inference(data: InferenceModelInput) -> list[list[str]]:
 
 
 @activity.defn
-async def write_results(data: InferenceResultsInput) -> None:
+async def write_results(data: InferenceResultsInput) -> list[str]:
     """
     Write the inference results to a file.
     """
@@ -57,3 +57,4 @@ async def write_results(data: InferenceResultsInput) -> None:
     if not cif_paths:
         raise ValueError('No CIF files were generated.')
     write_entry_archive(cif_paths, data)
+    return cif_paths

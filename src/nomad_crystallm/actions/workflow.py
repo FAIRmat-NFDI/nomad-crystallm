@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from temporalio import workflow
 
+
 with workflow.unsafe.imports_passed_through():
     from nomad_crystallm.actions.activities import (
         construct_model_input,
@@ -11,6 +12,7 @@ with workflow.unsafe.imports_passed_through():
     )
     from nomad_crystallm.actions.shared import (
         InferenceModelInput,
+        InferenceResults,
         InferenceResultsInput,
         InferenceUserInput,
     )
@@ -19,8 +21,8 @@ with workflow.unsafe.imports_passed_through():
 @workflow.defn
 class InferenceWorkflow:
     @workflow.run
-    async def run(self, data: InferenceUserInput) -> list[str]:
-        constructed_prompts = await workflow.execute_activity(
+    async def run(self, data: InferenceInput) -> InferenceResults:
+        constructed_model_input = await workflow.execute_activity(
             construct_model_input,
             data.prompt_generation_inputs,
             start_to_close_timeout=timedelta(seconds=60),
@@ -58,4 +60,18 @@ class InferenceWorkflow:
                 ),
                 start_to_close_timeout=timedelta(seconds=60),
             )
-        return generated_compositions_samples
+        cif_paths = await workflow.execute_activity(
+            write_results,
+            InferenceResultsInput(
+                user_id=data.user_id,
+                upload_id=data.upload_id,
+                generated_samples=generated_samples,
+                generate_cif=data.generate_cif,
+                model_data=model_data,
+                cif_dir=workflow.info().workflow_id,
+            ),
+            start_to_close_timeout=timedelta(seconds=60),
+        )
+        return InferenceResults(
+            cif_paths=cif_paths, generated_samples=generated_samples
+        )

@@ -129,6 +129,7 @@ where = ["src"]
 [project.entry-points.'nomad.plugin']
 crystallm_inference = "nomad_crystallm.actions:crystallm_inference"
 bandgap_prediction = "nomad_crystallm.actions:bandgap_prediction"
+crystallm_bandgap_prediction = "nomad_crystallm.actions.crystallm_bandgap_predictor:crystallm_bandgap_prediction"
 crystallm_schemas = "nomad_crystallm.schemas:crystallm_schemas"
 
 [tool.cruft]

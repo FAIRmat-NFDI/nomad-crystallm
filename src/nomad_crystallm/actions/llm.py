@@ -237,7 +237,7 @@ def write_cif_files(
             f'No upload files found for upload_id "{result.upload_id}" '
             f'and user_id "{result.user_id}".'
         )
-    cif_paths = []
+    cif_paths: list[str] = []
     with tempfile.TemporaryDirectory() as tmpdir:
         for k, sample in enumerate(result.generated_samples):
             fname = os.path.join(tmpdir, f'{result.composition}_{k + 1}.cif')

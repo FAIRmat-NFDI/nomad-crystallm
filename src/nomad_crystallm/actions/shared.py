@@ -93,8 +93,11 @@ class InferenceResultsInput:
     inference_settings: InferenceSettingsInput
     generated_samples: list[str]
     generate_cif: bool
-    relative_cif_dir: str
 
+@dataclass
+class InferenceResults:
+    generated_samples: list[str]
+    cif_paths: list[str]
 
 SpaceGroupLiteral = Literal[
     '',
