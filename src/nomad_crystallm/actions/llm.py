@@ -113,10 +113,12 @@ def construct_prompt(
     return f'data_{comp_with_provided_factor_str}\n'
 
 
-def evaluate_model(inference_state: InferenceModelInput) -> list[str]:
+def evaluate_model(inference_state: InferenceModelInput) -> list[list[str]]:
     """
     Evaluate the model with the given parameters.
     Adapted from https://github.com/lantunes/CrystaLLM
+
+    Returns a list of generated CIF strings for all the compositions.
     """
     torch.manual_seed(inference_state.inference_settings.seed)
     torch.cuda.manual_seed(inference_state.inference_settings.seed)
@@ -157,25 +159,26 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[str]:
     if inference_state.inference_settings.compile:
         model = torch.compile(model)
 
-    # encode the beginning of the prompt
-    prompt = inference_state.prompts
-    start_ids = encode(tokenizer.tokenize_cif(prompt))
-    x = torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...]
-
     # run generation
-    generated = []
-    with torch.no_grad():
-        with ctx:
-            for k in range(inference_state.inference_settings.num_samples):
-                y = model.generate(
-                    x,
-                    inference_state.inference_settings.max_new_tokens,
-                    temperature=inference_state.inference_settings.temperature,
-                    top_k=inference_state.inference_settings.top_k,
-                )
+    all_generated = []
+    for prompt in inference_state.prompts:
+        # encode the beginning of the prompt
+        start_ids = encode(tokenizer.tokenize_cif(prompt))
+        x = torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...]
+        generated = []
+        with torch.no_grad():
+            with ctx:
+                for k in range(inference_state.inference_settings.num_samples):
+                    y = model.generate(
+                        x,
+                        inference_state.inference_settings.max_new_tokens,
+                        temperature=inference_state.inference_settings.temperature,
+                        top_k=inference_state.inference_settings.top_k,
+                    )
                 generated.append(decode(y[0].tolist()))
+        all_generated.extend(generated)
 
-    return generated
+    return all_generated
 
 
 def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
@@ -200,12 +203,14 @@ def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
     return cif
 
 
-def write_cif_files(result: InferenceResultsInput, logger: 'LoggerAdapter') -> None:
+def write_cif_files(
+    result: InferenceResultsInput, logger: 'LoggerAdapter'
+) -> list[str]:
     """
     Write the generated CIFs to the specified target (console or file).
     """
     if not result.generate_cif:
-        return
+        return []
     upload_files = get_upload_files(result.upload_id, result.user_id)
     if not upload_files:
         raise ValueError(

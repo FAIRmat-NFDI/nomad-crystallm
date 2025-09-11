@@ -6,7 +6,7 @@ from temporalio import activity
 from nomad_crystallm.actions.shared import (
     InferenceModelInput,
     InferenceResultsInput,
-    InferenceUserInput,
+    PromptGenerationInput,
 )
 
 
@@ -21,15 +21,16 @@ async def get_model(data: InferenceModelInput):
 
 
 @activity.defn
-async def construct_model_input(data: InferenceUserInput) -> str:
+async def construct_model_input(data: PromptGenerationInput) -> list[str]:
     from .llm import construct_prompt
 
-    # validates that the composition is not empty
-    if not data.input_composition:
-        raise ValueError('Composition for the prompt cannot be empty.')
-    # constructs the prompt for the model
     prompts = []
+
+    # constructs the prompt for the model
     for prompt_generation_input in data.prompt_generation_inputs:
+        # validates that the composition is not empty
+        if not prompt_generation_input.input_composition:
+            raise ValueError('Composition for the prompt cannot be empty.')
         prompts.append(
             construct_prompt(
                 prompt_generation_input.input_composition,
@@ -37,14 +38,17 @@ async def construct_model_input(data: InferenceUserInput) -> str:
                 prompt_generation_input.input_space_group,
             )
         )
+
     return prompts
 
 
 @activity.defn
-async def run_inference(data: InferenceModelInput) -> list[str]:
+async def run_inference(data: InferenceModelInput) -> list[list[str]]:
     from .llm import evaluate_model
 
-    data.model_path = os.path.join(action_artifacts_dir(), data.model_path)
+    data.inference_settings.model_path = os.path.join(
+        action_artifacts_dir(), data.inference_settings.model_path
+    )
     return evaluate_model(data)
 
 

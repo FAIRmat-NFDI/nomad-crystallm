@@ -1,4 +1,6 @@
+import asyncio
 from datetime import timedelta
+import os
 
 from temporalio import workflow
 
@@ -20,13 +22,13 @@ with workflow.unsafe.imports_passed_through():
 class InferenceWorkflow:
     @workflow.run
     async def run(self, data: InferenceUserInput) -> list[str]:
-        constructed_model_input = await workflow.execute_activity(
+        constructed_prompts = await workflow.execute_activity(
             construct_model_input,
-            data,
+            data.prompt_generation_inputs,
             start_to_close_timeout=timedelta(seconds=60),
         )
         model_data = InferenceModelInput(
-            prompts=constructed_model_input,
+            prompts=constructed_prompts,
             inference_settings=data.inference_settings,
         )
         await workflow.execute_activity(
@@ -34,21 +36,29 @@ class InferenceWorkflow:
             model_data,
             start_to_close_timeout=timedelta(seconds=600),
         )
-        generated_samples = await workflow.execute_activity(
+        generated_compositions_samples = await workflow.execute_activity(
             run_inference,
             model_data,
             start_to_close_timeout=timedelta(seconds=600),
         )
-        await workflow.execute_activity(
-            write_results,
-            InferenceResultsInput(
-                user_id=data.user_id,
-                upload_id=data.upload_id,
-                generated_samples=generated_samples,
-                generate_cif=data.generate_cif,
-                model_data=model_data,
-                cif_dir=workflow.info().workflow_id,
-            ),
-            start_to_close_timeout=timedelta(seconds=60),
+        await asyncio.gather(
+            [
+                workflow.execute_activity(
+                    write_results,
+                    InferenceResultsInput(
+                        user_id=data.user_id,
+                        upload_id=data.upload_id,
+                        generated_samples=generated_samples,
+                        generate_cif=data.inference_settings.generate_cif,
+                        model_data=model_data,
+                        cif_dir=os.path.join(
+                            workflow.info().workflow_id,
+                            'composition_' + str(i + 1),
+                        ),
+                    ),
+                    start_to_close_timeout=timedelta(seconds=60),
+                )
+                for i, generated_samples in enumerate(generated_compositions_samples)
+            ]
         )
-        return generated_samples
+        return generated_compositions_samples
