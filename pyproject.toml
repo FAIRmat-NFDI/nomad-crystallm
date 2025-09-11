@@ -43,6 +43,11 @@ cpu-action = [
     "requests",
     "aiohttp",
     "crystallm @ git+https://github.com/ka-sarthak/CrystaLLM.git@main",
+    "robocrys>=0.2.11",
+    "transformers>=4.23.1",
+    "sentencepiece>=0.1.97",
+    "tokenizers>=0.13.1",
+    "torchmetrics>=0.11.4",
 ]
 dev = ["ruff", "pytest", "structlog", "python-logstash>=0.4.6",]
 
@@ -123,6 +128,7 @@ where = ["src"]
 
 [project.entry-points.'nomad.plugin']
 crystallm_inference = "nomad_crystallm.actions:crystallm_inference"
+bandgap_prediction = "nomad_crystallm.actions:bandgap_prediction"
 crystallm_schemas = "nomad_crystallm.schemas:crystallm_schemas"
 
 [tool.cruft]

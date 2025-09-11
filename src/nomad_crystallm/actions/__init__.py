@@ -2,6 +2,8 @@ from nomad.actions import TaskQueue
 from pydantic import Field
 from temporalio import workflow
 
+from nomad_crystallm.actions.bandgap_predictor import bandgap_prediction
+
 with workflow.unsafe.imports_passed_through():
     from nomad.config.models.plugins import ActionEntryPoint
 
