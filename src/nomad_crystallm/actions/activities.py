@@ -18,13 +18,15 @@ async def get_model(data: InferenceModelInput):
 
 
 @activity.defn
-async def construct_model_input(data: PromptGenerationInput) -> list[str]:
+async def construct_model_input(
+    prompt_generation_inputs: list[PromptGenerationInput],
+) -> list[str]:
     from .llm import construct_prompt
 
     prompts = []
 
     # constructs the prompt for the model
-    for prompt_generation_input in data.prompt_generation_inputs:
+    for prompt_generation_input in prompt_generation_inputs:
         # validates that the composition is not empty
         if not prompt_generation_input.input_composition:
             raise ValueError('Composition for the prompt cannot be empty.')
@@ -43,9 +45,6 @@ async def construct_model_input(data: PromptGenerationInput) -> list[str]:
 async def run_inference(data: InferenceModelInput) -> list[list[str]]:
     from .llm import evaluate_model
 
-    data.inference_settings.model_path = os.path.join(
-        action_artifacts_dir(), data.inference_settings.model_path
-    )
     return evaluate_model(data)
 
 

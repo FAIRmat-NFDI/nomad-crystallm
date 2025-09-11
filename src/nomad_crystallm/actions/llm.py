@@ -4,6 +4,7 @@ import os
 import shutil
 import tarfile
 import tempfile
+import time
 from contextlib import nullcontext
 from typing import TYPE_CHECKING
 
@@ -58,9 +59,9 @@ async def download_model(model_name: str) -> dict:
     provided URL.
     """
     model_path = model_data[model_name]['model_path']
-    model_url = model_data[model_name]['model_url']
-
     model_path = os.path.join(action_artifacts_dir(), model_path)
+
+    model_url = model_data[model_name]['model_url']
 
     # Check if file exists asynchronously
     exists = await asyncio.to_thread(os.path.exists, model_path)
@@ -162,9 +163,9 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[list[str]]:
     encode = tokenizer.encode
     decode = tokenizer.decode
 
-    checkpoint = torch.load(
-        inference_state.inference_settings.model_path, map_location=device
-    )
+    model_path = model_data[inference_state.inference_settings.model_name]['model_path']
+    model_path = os.path.join(action_artifacts_dir(), model_path)
+    checkpoint = torch.load(model_path, map_location=device)
     gptconf = GPTConfig(**checkpoint['model_args'])
     model = GPT(gptconf)
     state_dict = checkpoint['model']
@@ -195,8 +196,8 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[list[str]]:
                         temperature=inference_state.inference_settings.temperature,
                         top_k=inference_state.inference_settings.top_k,
                     )
-                generated.append(decode(y[0].tolist()))
-        all_generated.extend(generated)
+                    generated.append(decode(y[0].tolist()))
+        all_generated.append(generated)
 
     return all_generated
 
@@ -240,14 +241,13 @@ def write_cif_files(
     cif_paths = []
     with tempfile.TemporaryDirectory() as tmpdir:
         for k, sample in enumerate(result.generated_samples):
-            fname = os.path.join(tmpdir, f'{result.cif_prefix}_{k + 1}.cif')
+            fname = os.path.join(tmpdir, f'{result.composition}_{k + 1}.cif')
             processed_sample = postprocess(sample, fname, logger)
             with open(fname, 'w', encoding='utf-8') as f:
                 f.write(processed_sample)
-            upload_files.add_rawfiles(fname, target_dir=result.cif_dir)
-            cif_paths.append(
-                os.path.join(result.cif_dir, f'{result.cif_prefix}_{k + 1}.cif')
-            )
+            cif_dir = os.path.join(result.action_instance_id, result.relative_cif_dir)
+            upload_files.add_rawfiles(fname, target_dir=cif_dir)
+            cif_paths.append(os.path.join(cif_dir, f'{result.composition}_{k + 1}.cif'))
     return cif_paths
 
 
@@ -263,26 +263,33 @@ def write_entry_archive(cif_paths, result: InferenceResultsInput) -> str:
         include_others=True,
     )
     inference_result = CrystaLLMInferenceResult(
-        prompt=result.model_data.prompts,
-        action_id=result.cif_dir,
+        prompt=result.prompt,
+        action_instance_id=result.action_instance_id,
         generated_cifs=cif_paths,
         inference_settings=InferenceSettings(
-            model=result.model_data.model_url.rsplit('/', 1)[-1].split('.tar.gz')[0],
-            num_samples=result.model_data.num_samples,
-            max_new_tokens=result.model_data.max_new_tokens,
-            temperature=result.model_data.temperature,
-            top_k=result.model_data.top_k,
-            seed=result.model_data.seed,
-            dtype=result.model_data.dtype,
-            compile=result.model_data.compile,
+            model=result.inference_settings.model_name,
+            num_samples=result.inference_settings.num_samples,
+            max_new_tokens=result.inference_settings.max_new_tokens,
+            temperature=result.inference_settings.temperature,
+            top_k=result.inference_settings.top_k,
+            seed=result.inference_settings.seed,
+            dtype=result.inference_settings.dtype,
+            compile=result.inference_settings.compile,
         ),
     )
-    fname = os.path.join('inference_result.archive.json')
-    with open(fname, 'w', encoding='utf-8') as f:
+    fname = os.path.join(f'crystallm_{result.composition}.archive.json')
+    with open(os.path.join(fname), 'w', encoding='utf-8') as f:
         json.dump({'data': inference_result.m_to_dict(with_root_def=True)}, f, indent=4)
     upload.process_upload(
         file_operations=[
-            dict(op='ADD', path=fname, target_dir=result.cif_dir, temporary=True)
+            dict(
+                op='ADD',
+                path=fname,
+                target_dir=os.path.join(
+                    result.action_instance_id, result.relative_cif_dir
+                ),
+                temporary=True,
+            )
         ],
         only_updated_files=True,
     )

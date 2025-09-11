@@ -42,18 +42,21 @@ class InferenceWorkflow:
             start_to_close_timeout=timedelta(seconds=600),
         )
         await asyncio.gather(
-            [
+            *[
                 workflow.execute_activity(
                     write_results,
                     InferenceResultsInput(
                         user_id=data.user_id,
                         upload_id=data.upload_id,
+                        action_instance_id=workflow.info().workflow_id,
+                        composition=data.prompt_generation_inputs[i].input_composition,
+                        prompt=model_data.prompts[i],
+                        inference_settings=model_data.inference_settings,
                         generated_samples=generated_samples,
                         generate_cif=data.inference_settings.generate_cif,
-                        model_data=model_data,
-                        cif_dir=os.path.join(
-                            workflow.info().workflow_id,
-                            'composition_' + str(i + 1),
+                        relative_cif_dir=(
+                            f'composition_{i + 1}_'
+                            f'{data.prompt_generation_inputs[i].input_composition}'
                         ),
                     ),
                     start_to_close_timeout=timedelta(seconds=60),

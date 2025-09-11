@@ -76,19 +76,24 @@ class InferenceResultsInput:
     Attributes:
     - upload_id: If generate_cif, write the generate CIF files to the upload.
     - user_id: User making the request
-    - generate_cif: If True, the model will generate CIF files.
+    - action_instance_id: ID of the action instance.
+    - composition: Composition of the material.
+    - prompt: Prompt used for the model.
+    - inference_settings: Settings for the model inference.
     - generated_samples: List to store generated samples from the model.
-    - cif_dir: Directory to save CIF files. If empty, uses the upload's raw directory.
-    - cif_prefix: Prefix for the generated CIF files: <cif_prefix>_<index>.cif
+    - generate_cif: If True, the model will generate CIF files.
+    - relative_cif_dir: Path of directory containing CIF relative to action directory.
     """
 
     upload_id: str
     user_id: str
+    action_instance_id: str
+    composition: str
+    prompt: str
+    inference_settings: InferenceSettingsInput
     generated_samples: list[str]
     generate_cif: bool
-    model_data: InferenceModelInput
-    cif_dir: str = ''  # empty string means the upload's raw directory
-    cif_prefix: str = 'sample'
+    relative_cif_dir: str
 
 
 SpaceGroupLiteral = Literal[
