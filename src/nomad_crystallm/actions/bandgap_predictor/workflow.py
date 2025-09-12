@@ -16,7 +16,9 @@ with workflow.unsafe.imports_passed_through():
 @workflow.defn
 class BandGapPredictionWorkflow:
     @workflow.run
-    async def run(self, input_data: BandGapPredictionInput) -> BandGapPredictionOutput:
+    async def run(
+        self, input_data: BandGapPredictionInput
+    ) -> list[BandGapPredictionOutput]:
         """
         The main workflow for the bandgap prediction.
         """

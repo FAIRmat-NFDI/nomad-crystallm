@@ -2,6 +2,7 @@ from nomad.actions import TaskQueue
 from pydantic import Field
 from temporalio import workflow
 
+
 with workflow.unsafe.imports_passed_through():
     from nomad.config.models.plugins import ActionEntryPoint
 
@@ -20,6 +21,7 @@ class CrystaLLMBandGapPredictionEntryPoint(ActionEntryPoint):
 
         from nomad_crystallm.actions.crystallm_bandgap_predictor.activities import (
             cif_to_description,
+            write_prediction_results,
         )
         from nomad_crystallm.actions.crystallm_bandgap_predictor.workflow import (
             CrystaLLMBandGapPredictionWorkflow,
@@ -28,7 +30,8 @@ class CrystaLLMBandGapPredictionEntryPoint(ActionEntryPoint):
         return Action(
             task_queue=self.task_queue,
             workflow=CrystaLLMBandGapPredictionWorkflow,
-            activities=[cif_to_description],
+            activities=[cif_to_description, write_prediction_results],
         )
+
 
 crystallm_bandgap_prediction = CrystaLLMBandGapPredictionEntryPoint()

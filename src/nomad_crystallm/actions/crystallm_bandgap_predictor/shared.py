@@ -13,12 +13,19 @@ class CrystaLLMBandGapPredictionOutput:
     - bandgap_predictions: A list of bandgap prediction results.
     """
 
-    generated_samples: list[str]
-    bandgap_predictions: BandGapPredictionOutput
+    inference_results: list[list[str]]
+    bandgap_predictions: list[BandGapPredictionOutput]
 
 
 @dataclass
 class CIFDescriptionInput:
-    cif_path: str
+    action_instance_id: str
     upload_id: str
     user_id: str
+
+
+@dataclass
+class WriteEntryInput:
+    upload_id: str
+    user_id: str
+    prediction_outputs: list[BandGapPredictionOutput]

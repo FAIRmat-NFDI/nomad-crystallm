@@ -54,7 +54,7 @@ async def setup_model(url: str) -> str:
 @activity.defn
 async def run_prediction_activity(
     model_path: str, input_data: 'BandGapPredictionInput'
-) -> 'BandGapPredictionOutput':
+) -> 'list[BandGapPredictionOutput]':
     """
     Runs the prediction activity.
     """

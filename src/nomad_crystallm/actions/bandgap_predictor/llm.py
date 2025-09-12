@@ -96,15 +96,20 @@ def run_prediction(
     input_data: BandGapPredictionInput,
     device='cpu',
     max_length=888,
-) -> BandGapPredictionOutput:
+) -> list[BandGapPredictionOutput]:
     """
     Runs the prediction on a list of descriptions.
     """
-    predictions, probabilities = predict_batch_classification(
-        model, tokenizer, input_data.descriptions, device, max_length
-    )
-    results = [
-        BandGapPredictionResult(prediction=bool(p), probability=float(f))
-        for p, f in zip(predictions, probabilities)
-    ]
-    return BandGapPredictionOutput(results=results)
+    results = []
+    for output in input_data.description_output:
+        predictions, probabilities = predict_batch_classification(
+            model, tokenizer, output.descriptions, device, max_length
+        )
+        entry_results = [
+            BandGapPredictionResult(prediction=bool(p), probability=float(f))
+            for p, f in zip(predictions, probabilities)
+        ]
+        results.append(
+            BandGapPredictionOutput(results=entry_results, entry_path=output.entry_path)
+        )
+    return results

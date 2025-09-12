@@ -276,19 +276,25 @@ def write_entry_archive(cif_paths, result: InferenceResultsInput) -> str:
             compile=result.inference_settings.compile,
         ),
     )
-    fname = os.path.join(f'crystallm_{result.composition}.archive.json')
+    fname = os.path.join(
+        str(upload.upload_files._raw_dir),
+        result.action_instance_id,
+        result.relative_cif_dir,
+        f'crystallm_{result.composition}.archive.json',
+    )
     with open(os.path.join(fname), 'w', encoding='utf-8') as f:
         json.dump({'data': inference_result.m_to_dict(with_root_def=True)}, f, indent=4)
-    upload.process_upload(
-        file_operations=[
-            dict(
-                op='ADD',
-                path=fname,
-                target_dir=os.path.join(
-                    result.action_instance_id, result.relative_cif_dir
-                ),
-                temporary=True,
-            )
-        ],
-        only_updated_files=True,
-    )
+    return fname
+    # upload.process_upload(
+    #     file_operations=[
+    #         dict(
+    #             op='ADD',
+    #             path=fname,
+    #             target_dir=os.path.join(
+    #                 result.action_instance_id, result.relative_cif_dir
+    #             ),
+    #             temporary=True,
+    #         )
+    #     ],
+    #     only_updated_files=True,
+    # )

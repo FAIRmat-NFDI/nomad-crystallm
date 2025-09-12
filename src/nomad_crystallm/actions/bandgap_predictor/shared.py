@@ -2,6 +2,12 @@ from dataclasses import dataclass
 
 
 @dataclass
+class CIFDescriptionOutput:
+    entry_path: str
+    descriptions: list[str]
+
+
+@dataclass
 class BandGapPredictionInput:
     """
     Input for the bandgap prediction workflow.
@@ -10,7 +16,7 @@ class BandGapPredictionInput:
     - descriptions: A list of material descriptions (strings).
     """
 
-    descriptions: list[str]
+    description_output: list[CIFDescriptionOutput]
     upload_id: str
     user_id: str
 
@@ -39,3 +45,4 @@ class BandGapPredictionOutput:
     """
 
     results: list[BandGapPredictionResult]
+    entry_path: str
