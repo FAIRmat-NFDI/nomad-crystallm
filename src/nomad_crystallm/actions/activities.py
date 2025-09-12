@@ -1,6 +1,4 @@
-import os
 
-from nomad.actions.utils import action_artifacts_dir
 from temporalio import activity
 
 from nomad_crystallm.actions.shared import (

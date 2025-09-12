@@ -4,7 +4,6 @@ import os
 import shutil
 import tarfile
 import tempfile
-import time
 from contextlib import nullcontext
 from typing import TYPE_CHECKING
 

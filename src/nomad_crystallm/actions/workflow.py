@@ -1,5 +1,3 @@
-import asyncio
-import os
 from datetime import timedelta
 
 from temporalio import workflow
