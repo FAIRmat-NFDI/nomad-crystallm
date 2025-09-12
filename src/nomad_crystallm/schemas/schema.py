@@ -85,6 +85,17 @@ class InferenceSettings(ArchiveSection):
     )
 
 
+class BandGapPrediction(ArchiveSection):
+    prediction = Quantity(
+        type=bool,
+        description='Whether a band gap is predicted to be present.',
+    )
+    probability = Quantity(
+        type=float,
+        description='Probability of the band gap prediction.',
+    )
+
+
 class CrystaLLMInferenceResult(EntryData):
     """Result of a CrystaLLM inference action."""
 
@@ -124,6 +135,12 @@ class CrystaLLMInferenceResult(EntryData):
     inference_settings = SubSection(
         section_def=InferenceSettings,
         description='Settings used for the inference action.',
+    )
+    band_gap_prediction = SubSection(
+        section_def=BandGapPrediction,
+        description='Prediction of whether a band gap is present in the '
+        'generated structure.',
+        repeats=True,
     )
 
     def process_generated_cifs(self, archive, logger):
