@@ -40,13 +40,29 @@ class InferenceSettingsInput(BaseModel):
     )
 
 
-class InferenceUserInput(BaseModel):
-    upload_id: str = Field(..., description='ID of the NOMAD upload to save results.')
-    user_id: str = Field(..., description='ID of the user making the request.')
+class PromptGenerationTextInput(BaseModel):
     prompt_generation_inputs: list[PromptGenerationInput] = Field(
         ...,
         description='List of prompt generation inputs.',
         title='Prompt Generation Inputs',
+    )
+    input_type: Literal['text']
+
+
+class PromptGenerationFileInput(BaseModel):
+    filepath: str = Field(
+        ...,
+        description='File path of the prompts',
+        title='Filepath',
+    )
+    input_type: Literal['filepath']
+
+
+class InferenceUserInput(BaseModel):
+    upload_id: str = Field(..., description='ID of the NOMAD upload to save results.')
+    user_id: str = Field(..., description='ID of the user making the request.')
+    prompts: PromptGenerationTextInput | PromptGenerationFileInput = Field(
+        discriminator='input_type'
     )
     inference_settings: InferenceSettingsInput = Field(
         ..., description='Inference settings for the model.', title='Inference Settings'
