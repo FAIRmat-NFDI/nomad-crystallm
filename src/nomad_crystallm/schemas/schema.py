@@ -273,7 +273,7 @@ class InferenceStatus(ArchiveSection):
             or self.trigger_get_action_status
         ):
             try:
-                status = get_action_status(self.action_id)
+                status = get_action_status(self.action_id, archive.metadata.authors[0])
                 if status:
                     self.status = status.name
             except Exception as e:

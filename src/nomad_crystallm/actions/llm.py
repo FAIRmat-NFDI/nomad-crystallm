@@ -1,5 +1,4 @@
 import asyncio
-import json
 import os
 import shutil
 import tarfile
@@ -19,14 +18,14 @@ from crystallm import (
     replace_symmetry_operators,
 )
 from nomad.actions.utils import action_artifacts_dir, get_upload_files
-from nomad.app.v1.routers.uploads import get_upload_with_read_access
-from nomad.datamodel import User
+from nomad.datamodel import ServerContext
 from pymatgen.core import Composition
 
 from nomad_crystallm.actions.shared import (
     InferenceModelInput,
     InferenceResultsInput,
 )
+from nomad_crystallm.actions.utils import get_upload
 from nomad_crystallm.schemas.schema import (
     CrystaLLMInferenceResult,
     InferenceSettings,
@@ -252,15 +251,8 @@ def write_cif_files(
 
 def write_entry_archive(cif_paths, result: InferenceResultsInput) -> str:
     """
-    Create an entry for the inference results and add it to the upload.
+    Create an entry for the inference results in raw folder of the upload.
     """
-
-    # upload_files = get_upload_files(result.upload_id, result.user_id)
-    upload = get_upload_with_read_access(
-        result.upload_id,
-        User(user_id=result.user_id),
-        include_others=True,
-    )
     inference_result = CrystaLLMInferenceResult(
         prompt=result.prompt,
         action_instance_id=result.action_instance_id,
@@ -276,19 +268,12 @@ def write_entry_archive(cif_paths, result: InferenceResultsInput) -> str:
             compile=result.inference_settings.compile,
         ),
     )
-    fname = os.path.join(f'crystallm_{result.composition}.archive.json')
-    with open(os.path.join(fname), 'w', encoding='utf-8') as f:
-        json.dump({'data': inference_result.m_to_dict(with_root_def=True)}, f, indent=4)
-    upload.process_upload(
-        file_operations=[
-            dict(
-                op='ADD',
-                path=fname,
-                target_dir=os.path.join(
-                    result.action_instance_id, result.relative_cif_dir
-                ),
-                temporary=True,
-            )
-        ],
-        only_updated_files=True,
+    rel_mainfile_path = os.path.join(
+        result.action_instance_id,
+        result.relative_cif_dir,
+        f'crystallm_{result.composition}.archive.json',
     )
+    # Create an entry for the inference results
+    context = ServerContext(get_upload(result.upload_id, result.user_id))
+    with context.update_entry(rel_mainfile_path, write=True, process=True) as archive:
+        archive['data'] = inference_result.m_to_dict(with_root_def=True)
