@@ -4,12 +4,13 @@ from temporalio import workflow
 
 with workflow.unsafe.imports_passed_through():
     from nomad_crystallm.actions.activities import (
-        construct_model_input,
+        construct_prompts,
         get_model,
         run_inference,
         write_results,
     )
     from nomad_crystallm.actions.shared import (
+        ConstructPromptInput,
         InferenceModelInput,
         InferenceResultsInput,
         InferenceUserInput,
@@ -21,8 +22,12 @@ class InferenceWorkflow:
     @workflow.run
     async def run(self, data: InferenceUserInput) -> list[str]:
         constructed_prompts = await workflow.execute_activity(
-            construct_model_input,
-            data.prompt_generation_inputs,
+            construct_prompts,
+            ConstructPromptInput(
+                prompter=data.prompter,
+                upload_id=data.upload_id,
+                user_id=data.user_id,
+            ),
             start_to_close_timeout=timedelta(seconds=60),
         )
         model_data = InferenceModelInput(
