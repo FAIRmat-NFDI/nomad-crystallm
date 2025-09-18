@@ -63,18 +63,25 @@ async def construct_prompts(
                 f'CSV file must contain the following columns: {required_columns}'
             )
         for _, row in df.iterrows():
+            if pd.isna(row['input_composition']):
+                raise ValueError('input_composition cannot be empty in the CSV file.')
+            input_composition = str(row['input_composition'])
+            input_num_formula_units_per_cell = (
+                str(int(row['input_num_formula_units_per_cell']))
+                if not pd.isna(row['input_num_formula_units_per_cell'])
+                else ''
+            )
+            input_space_group = (
+                str(row['input_space_group'])
+                if not pd.isna(row['input_space_group'])
+                else ''
+            )
             outputs.append(
                 ConstructPromptOutput(
                     prompt=construct_prompt(
-                        str(row['input_composition'])
-                        if not pd.isna(row['input_composition'])
-                        else '',
-                        str(int(row['input_num_formula_units_per_cell']))
-                        if not pd.isna(row['input_num_formula_units_per_cell'])
-                        else '',
-                        str(row['input_space_group'])
-                        if not pd.isna(row['input_space_group'])
-                        else '',
+                        input_composition,
+                        input_num_formula_units_per_cell,
+                        input_space_group,
                     ),
                     composition=str(row['input_composition']),
                 )
