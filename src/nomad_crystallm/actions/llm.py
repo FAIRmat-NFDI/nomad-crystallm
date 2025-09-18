@@ -277,7 +277,7 @@ def write_entry_archive(cif_paths, result: WriteResultsInput) -> str:
     )
     # Create an entry for the inference results
     upload = get_upload(result.upload_id, result.user_id)
-    upload.parser_level = -1
+    upload.parser_level = -1  # avoid parser_level=None when process_local=False
     context = ServerContext(upload)
     with context.update_entry(rel_mainfile_path, write=True, process=True) as archive:
         archive['data'] = inference_result.m_to_dict(with_root_def=True)
