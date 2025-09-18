@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from pydantic import BaseModel, Field
+from pydantic.json_schema import SkipJsonSchema
 
 
 class PromptGenerationInput(BaseModel):
@@ -33,7 +34,7 @@ class InferenceSettingsInput(BaseModel):
         'bfloat16', description='Data type for the model (based on PyTorch data types).'
     )
     compile: bool = Field(
-        False, description='Whether to compile the model for faster inference.'
+        True, description='Whether to compile the model for faster inference.'
     )
 
 
@@ -43,7 +44,7 @@ class PromptGenerationTextInput(BaseModel):
         description='List of prompt generation inputs.',
         title='Prompt Generation Inputs',
     )
-    input_type: Literal['text'] = Field(hidden=True)
+    input_type: SkipJsonSchema[Literal['text']]
 
 
 class PromptGenerationFileInput(BaseModel):
@@ -53,7 +54,7 @@ class PromptGenerationFileInput(BaseModel):
         'relative to the raw folder of the specified upload.',
         title='Filepath',
     )
-    input_type: Literal['filepath']
+    input_type: SkipJsonSchema[Literal['filepath']]
 
 
 class InferenceUserInput(BaseModel):
