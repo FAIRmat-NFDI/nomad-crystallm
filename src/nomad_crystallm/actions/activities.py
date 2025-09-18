@@ -4,36 +4,41 @@ from temporalio import activity
 
 from nomad_crystallm.actions.shared import (
     ConstructPromptInput,
-    InferenceModelInput,
-    InferenceResultsInput,
+    ConstructPromptOutput,
+    InferenceInput,
+    InferenceOutput,
     PromptGenerationFileInput,
     PromptGenerationTextInput,
+    WriteResultsInput,
 )
 from nomad_crystallm.actions.utils import get_upload
 
 
 @activity.defn
-async def get_model(data: InferenceModelInput):
+async def get_model(model_name):
     from .llm import download_model
 
-    await download_model(data.inference_settings.model_name)
+    await download_model(model_name)
 
 
 @activity.defn
 async def construct_prompts(
     data: ConstructPromptInput,
-) -> list[str]:
+) -> list[ConstructPromptOutput]:
     from .llm import construct_prompt
 
-    prompts = []
+    outputs = []
 
     if isinstance(data.prompter, PromptGenerationTextInput):
         for prompt_generation_input in data.prompter.prompt_generation_inputs:
-            prompts.append(
-                construct_prompt(
-                    prompt_generation_input.input_composition,
-                    prompt_generation_input.input_num_formula_units_per_cell,
-                    prompt_generation_input.input_space_group,
+            outputs.append(
+                ConstructPromptOutput(
+                    prompt=construct_prompt(
+                        prompt_generation_input.input_composition,
+                        prompt_generation_input.input_num_formula_units_per_cell,
+                        prompt_generation_input.input_space_group,
+                    ),
+                    composition=prompt_generation_input.input_composition,
                 )
             )
     elif isinstance(data.prompter, PromptGenerationFileInput):
@@ -57,26 +62,29 @@ async def construct_prompts(
                 f'CSV file must contain the following columns: {required_columns}'
             )
         for _, row in df.iterrows():
-            prompts.append(
-                construct_prompt(
-                    row['input_composition'],
-                    row['input_num_formula_units_per_cell'],
-                    row['input_space_group'],
+            outputs.append(
+                ConstructPromptOutput(
+                    prompt=construct_prompt(
+                        str(row['input_composition']),
+                        str(row['input_num_formula_units_per_cell']),
+                        str(row['input_space_group']),
+                    ),
+                    composition=str(row['input_composition']),
                 )
             )
 
-    return prompts
+    return outputs
 
 
 @activity.defn
-async def run_inference(data: InferenceModelInput) -> list[list[str]]:
+async def run_inference(data: InferenceInput) -> InferenceOutput:
     from .llm import evaluate_model
 
     return evaluate_model(data)
 
 
 @activity.defn
-async def write_results(data: InferenceResultsInput) -> None:
+async def write_results(data: WriteResultsInput) -> None:
     """
     Write the inference results to a file.
     """
