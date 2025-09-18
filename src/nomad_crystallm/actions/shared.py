@@ -35,9 +35,6 @@ class InferenceSettingsInput(BaseModel):
     compile: bool = Field(
         False, description='Whether to compile the model for faster inference.'
     )
-    generate_cif: bool = Field(
-        True, description='If True, the model will generate CIF files.'
-    )
 
 
 class PromptGenerationTextInput(BaseModel):
@@ -46,7 +43,7 @@ class PromptGenerationTextInput(BaseModel):
         description='List of prompt generation inputs.',
         title='Prompt Generation Inputs',
     )
-    input_type: Literal['text']
+    input_type: Literal['text'] = Field(hidden=True)
 
 
 class PromptGenerationFileInput(BaseModel):
@@ -87,9 +84,23 @@ class ConstructPromptInput:
 
 
 @dataclass
-class InferenceModelInput:
+class ConstructPromptOutput:
     """
-    Model input data for the inference workflow.
+    Output data for prompt construction.
+
+    Attributes:
+    - prompt: Constructed prompt.
+    - composition: Composition corresponding to the prompt.
+    """
+
+    prompt: str
+    composition: str
+
+
+@dataclass
+class InferenceInput:
+    """
+    Input data for model inference.
 
     Attributes:
 
@@ -97,36 +108,47 @@ class InferenceModelInput:
     - inference_settings: Settings for the model inference.
     """
 
-    prompts: list[str]
+    constructed_prompt: ConstructPromptOutput
     inference_settings: InferenceSettingsInput
 
 
 @dataclass
-class InferenceResultsInput:
+class InferenceOutput:
     """
-    CIF Results input data for the inference workflow.
+    Output data from the model inference.
+
+    Attributes:
+    - generated_samples: List of generated samples from the model. Number of samples
+        is determined by the `num_samples` attribute in InferenceSettingsInput.
+    """
+
+    generated_samples: list[str]
+
+
+@dataclass
+class WriteResultsInput:
+    """
+    Input data for writing results as NOMAD entries.
 
     Attributes:
     - upload_id: If generate_cif, write the generate CIF files to the upload.
     - user_id: User making the request
-    - action_instance_id: ID of the action instance.
-    - composition: Composition of the material.
+    - action_instance_id: ID of the action instance; will be used to create a subfolder
+        under the raw folder of the upload.
+    - relative_cif_dir: Directory for the CIF files relative to the action instance dir.
+    - constructed_prompt: Composition of the material.
     - prompt: Prompt used for the model.
     - inference_settings: Settings for the model inference.
-    - generated_samples: List to store generated samples from the model.
-    - generate_cif: If True, the model will generate CIF files.
-    - relative_cif_dir: Path of directory containing CIF relative to action directory.
+    - inference_output: Output from the model containing generated samples.
     """
 
     upload_id: str
     user_id: str
     action_instance_id: str
-    composition: str
-    prompt: str
-    inference_settings: InferenceSettingsInput
-    generated_samples: list[str]
-    generate_cif: bool
     relative_cif_dir: str
+    constructed_prompt: ConstructPromptOutput
+    inference_settings: InferenceSettingsInput
+    inference_output: InferenceOutput
 
 
 SpaceGroupLiteral = Literal[

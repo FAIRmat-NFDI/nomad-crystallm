@@ -22,8 +22,9 @@ from nomad.datamodel import ServerContext
 from pymatgen.core import Composition
 
 from nomad_crystallm.actions.shared import (
-    InferenceModelInput,
-    InferenceResultsInput,
+    InferenceInput,
+    InferenceOutput,
+    WriteResultsInput,
 )
 from nomad_crystallm.actions.utils import get_upload
 from nomad_crystallm.schemas.schema import (
@@ -132,15 +133,19 @@ def construct_prompt(
     return f'data_{comp_with_provided_factor_str}\n'
 
 
-def evaluate_model(inference_state: InferenceModelInput) -> list[list[str]]:
+def evaluate_model(inference_input: InferenceInput) -> InferenceOutput:
     """
     Evaluate the model with the given parameters.
     Adapted from https://github.com/lantunes/CrystaLLM
 
-    Returns a list of generated CIF strings for all the compositions.
+    Args:
+    - inference_input (InferenceInput): The input parameters for inference.
+
+    Returns:
+    - InferenceOutput: The output containing generated samples.
     """
-    torch.manual_seed(inference_state.inference_settings.seed)
-    torch.cuda.manual_seed(inference_state.inference_settings.seed)
+    torch.manual_seed(inference_input.inference_settings.seed)
+    torch.cuda.manual_seed(inference_input.inference_settings.seed)
     torch.backends.cuda.matmul.allow_tf32 = True  # allow tf32 on matmul
     torch.backends.cudnn.allow_tf32 = True  # allow tf32 on cudnn
     device = (
@@ -150,7 +155,7 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[list[str]]:
         'float32': torch.float32,
         'bfloat16': torch.bfloat16,
         'float16': torch.float16,
-    }[inference_state.inference_settings.dtype]
+    }[inference_input.inference_settings.dtype]
     ctx = (
         nullcontext()
         if device == 'cpu'
@@ -161,43 +166,42 @@ def evaluate_model(inference_state: InferenceModelInput) -> list[list[str]]:
     encode = tokenizer.encode
     decode = tokenizer.decode
 
-    model_path = model_data[inference_state.inference_settings.model_name]['model_path']
+    model_path = model_data[inference_input.inference_settings.model_name]['model_path']
     model_path = os.path.join(action_artifacts_dir(), model_path)
     checkpoint = torch.load(model_path, map_location=device)
     gptconf = GPTConfig(**checkpoint['model_args'])
     model = GPT(gptconf)
     state_dict = checkpoint['model']
     unwanted_prefix = '_orig_mod.'
-    for k, v in list(state_dict.items()):
+    for k, _ in list(state_dict.items()):
         if k.startswith(unwanted_prefix):
             state_dict[k[len(unwanted_prefix) :]] = state_dict.pop(k)
     model.load_state_dict(state_dict)
 
     model.eval()
     model.to(device)
-    if inference_state.inference_settings.compile:
+    if inference_input.inference_settings.compile:
         model = torch.compile(model)
 
     # run generation
-    all_generated = []
-    for prompt in inference_state.prompts:
-        # encode the beginning of the prompt
-        start_ids = encode(tokenizer.tokenize_cif(prompt))
-        x = torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...]
-        generated = []
-        with torch.no_grad():
-            with ctx:
-                for k in range(inference_state.inference_settings.num_samples):
-                    y = model.generate(
-                        x,
-                        inference_state.inference_settings.max_new_tokens,
-                        temperature=inference_state.inference_settings.temperature,
-                        top_k=inference_state.inference_settings.top_k,
-                    )
-                    generated.append(decode(y[0].tolist()))
-        all_generated.append(generated)
+    # encode the beginning of the prompt
+    start_ids = encode(
+        tokenizer.tokenize_cif(inference_input.constructed_prompt.prompt)
+    )
+    x = torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...]
+    output = InferenceOutput(generated_samples=[])
+    with torch.no_grad():
+        with ctx:
+            for k in range(inference_input.inference_settings.num_samples):
+                y = model.generate(
+                    x,
+                    inference_input.inference_settings.max_new_tokens,
+                    temperature=inference_input.inference_settings.temperature,
+                    top_k=inference_input.inference_settings.top_k,
+                )
+                output.generated_samples.append(decode(y[0].tolist()))
 
-    return all_generated
+    return output
 
 
 def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
@@ -222,14 +226,10 @@ def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
     return cif
 
 
-def write_cif_files(
-    result: InferenceResultsInput, logger: 'LoggerAdapter'
-) -> list[str]:
+def write_cif_files(result: WriteResultsInput, logger: 'LoggerAdapter') -> list[str]:
     """
-    Write the generated CIFs to the specified target (console or file).
+    Write the generated CIFs under 'raw/<action_instance_id>/<relative_cif_dir>'.
     """
-    if not result.generate_cif:
-        return []
     upload_files = get_upload_files(result.upload_id, result.user_id)
     if not upload_files:
         raise ValueError(
@@ -238,23 +238,25 @@ def write_cif_files(
         )
     cif_paths = []
     with tempfile.TemporaryDirectory() as tmpdir:
-        for k, sample in enumerate(result.generated_samples):
-            fname = os.path.join(tmpdir, f'{result.composition}_{k + 1}.cif')
-            processed_sample = postprocess(sample, fname, logger)
-            with open(fname, 'w', encoding='utf-8') as f:
+        for idx, sample in enumerate(result.inference_output.generated_samples):
+            fname = f'{result.constructed_prompt.composition}_{idx + 1}.cif'
+            tmp_fpath = os.path.join(tmpdir, fname)
+            processed_sample = postprocess(sample, tmp_fpath, logger)
+            with open(tmp_fpath, 'w', encoding='utf-8') as f:
                 f.write(processed_sample)
             cif_dir = os.path.join(result.action_instance_id, result.relative_cif_dir)
-            upload_files.add_rawfiles(fname, target_dir=cif_dir)
-            cif_paths.append(os.path.join(cif_dir, f'{result.composition}_{k + 1}.cif'))
+            upload_files.add_rawfiles(tmp_fpath, target_dir=cif_dir)
+            cif_paths.append(os.path.join(cif_dir, fname))
     return cif_paths
 
 
-def write_entry_archive(cif_paths, result: InferenceResultsInput) -> str:
+def write_entry_archive(cif_paths, result: WriteResultsInput) -> str:
     """
-    Create an entry for the inference results in raw folder of the upload.
+    Create an entry for the inference results under
+    'raw/<action_instance_id>/<relative_cif_dir>'.
     """
     inference_result = CrystaLLMInferenceResult(
-        prompt=result.prompt,
+        prompt=result.constructed_prompt.prompt,
         action_instance_id=result.action_instance_id,
         generated_cifs=cif_paths,
         inference_settings=InferenceSettings(
@@ -271,9 +273,11 @@ def write_entry_archive(cif_paths, result: InferenceResultsInput) -> str:
     rel_mainfile_path = os.path.join(
         result.action_instance_id,
         result.relative_cif_dir,
-        f'crystallm_{result.composition}.archive.json',
+        f'crystallm_{result.constructed_prompt.composition}.archive.json',
     )
     # Create an entry for the inference results
-    context = ServerContext(get_upload(result.upload_id, result.user_id))
+    upload = get_upload(result.upload_id, result.user_id)
+    upload.parser_level = -1
+    context = ServerContext(upload)
     with context.update_entry(rel_mainfile_path, write=True, process=True) as archive:
         archive['data'] = inference_result.m_to_dict(with_root_def=True)
