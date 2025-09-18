@@ -1,61 +1,66 @@
 from datetime import timedelta
 
 from temporalio import workflow
+from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
     from nomad_crystallm.actions.activities import (
-        construct_model_input,
+        construct_prompts,
         get_model,
         run_inference,
         write_results,
     )
     from nomad_crystallm.actions.shared import (
-        InferenceModelInput,
-        InferenceResultsInput,
+        ConstructPromptInput,
+        InferenceInput,
         InferenceUserInput,
+        WriteResultsInput,
     )
 
 
 @workflow.defn
 class InferenceWorkflow:
     @workflow.run
-    async def run(self, data: InferenceUserInput) -> list[str]:
+    async def run(self, data: InferenceUserInput) -> None:
+        retry_policy = RetryPolicy(maximum_attempts=3)
         constructed_prompts = await workflow.execute_activity(
-            construct_model_input,
-            data.prompt_generation_inputs,
-            start_to_close_timeout=timedelta(seconds=60),
-        )
-        model_data = InferenceModelInput(
-            prompts=constructed_prompts,
-            inference_settings=data.inference_settings,
+            construct_prompts,
+            ConstructPromptInput(
+                prompter=data.prompter,
+                upload_id=data.upload_id,
+                user_id=data.user_id,
+            ),
+            start_to_close_timeout=timedelta(hours=1),
+            retry_policy=retry_policy,
         )
         await workflow.execute_activity(
             get_model,
-            model_data,
-            start_to_close_timeout=timedelta(seconds=600),
+            data.inference_settings.model_name,
+            start_to_close_timeout=timedelta(hours=1),
         )
-        generated_compositions_samples = await workflow.execute_activity(
-            run_inference,
-            model_data,
-            start_to_close_timeout=timedelta(seconds=600),
-        )
-        for i, generated_samples in enumerate(generated_compositions_samples):
+        for idx, constructed_prompt in enumerate(constructed_prompts):
+            inference_output = await workflow.execute_activity(
+                run_inference,
+                InferenceInput(
+                    constructed_prompt=constructed_prompt,
+                    inference_settings=data.inference_settings,
+                ),
+                start_to_close_timeout=timedelta(hours=1),
+                retry_policy=retry_policy,
+            )
             await workflow.execute_activity(
                 write_results,
-                InferenceResultsInput(
+                WriteResultsInput(
                     user_id=data.user_id,
                     upload_id=data.upload_id,
                     action_instance_id=workflow.info().workflow_id,
-                    composition=data.prompt_generation_inputs[i].input_composition,
-                    prompt=model_data.prompts[i],
-                    inference_settings=model_data.inference_settings,
-                    generated_samples=generated_samples,
-                    generate_cif=data.inference_settings.generate_cif,
                     relative_cif_dir=(
-                        f'composition_{i + 1}_'
-                        f'{data.prompt_generation_inputs[i].input_composition}'
+                        f'composition_{idx + 1}_{constructed_prompt.composition}'
                     ),
+                    constructed_prompt=constructed_prompt,
+                    inference_settings=data.inference_settings,
+                    inference_output=inference_output,
                 ),
-                start_to_close_timeout=timedelta(seconds=60),
+                start_to_close_timeout=timedelta(hours=1),
+                retry_policy=retry_policy,
             )
-        return generated_compositions_samples
