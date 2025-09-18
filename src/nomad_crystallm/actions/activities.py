@@ -1,5 +1,3 @@
-import pandas as pd
-from nomad.datamodel import ServerContext
 from temporalio import activity
 
 from nomad_crystallm.actions.shared import (
@@ -25,6 +23,9 @@ async def get_model(model_name):
 async def construct_prompts(
     data: ConstructPromptInput,
 ) -> list[ConstructPromptOutput]:
+    import pandas as pd
+    from nomad.datamodel import ServerContext
+
     from .llm import construct_prompt
 
     outputs = []
@@ -65,9 +66,15 @@ async def construct_prompts(
             outputs.append(
                 ConstructPromptOutput(
                     prompt=construct_prompt(
-                        str(row['input_composition']),
-                        str(row['input_num_formula_units_per_cell']),
-                        str(row['input_space_group']),
+                        str(row['input_composition'])
+                        if not pd.isna(row['input_composition'])
+                        else '',
+                        str(int(row['input_num_formula_units_per_cell']))
+                        if not pd.isna(row['input_num_formula_units_per_cell'])
+                        else '',
+                        str(row['input_space_group'])
+                        if not pd.isna(row['input_space_group'])
+                        else '',
                     ),
                     composition=str(row['input_composition']),
                 )
