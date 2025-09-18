@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from temporalio import workflow
+from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
     from nomad_crystallm.actions.activities import (
@@ -21,6 +22,7 @@ with workflow.unsafe.imports_passed_through():
 class InferenceWorkflow:
     @workflow.run
     async def run(self, data: InferenceUserInput) -> None:
+        retry_policy = RetryPolicy(maximum_attempts=3)
         constructed_prompts = await workflow.execute_activity(
             construct_prompts,
             ConstructPromptInput(
@@ -29,6 +31,7 @@ class InferenceWorkflow:
                 user_id=data.user_id,
             ),
             start_to_close_timeout=timedelta(hours=1),
+            retry_policy=retry_policy,
         )
         await workflow.execute_activity(
             get_model,
@@ -43,6 +46,7 @@ class InferenceWorkflow:
                     inference_settings=data.inference_settings,
                 ),
                 start_to_close_timeout=timedelta(hours=1),
+                retry_policy=retry_policy,
             )
             await workflow.execute_activity(
                 write_results,
@@ -58,4 +62,5 @@ class InferenceWorkflow:
                     inference_output=inference_output,
                 ),
                 start_to_close_timeout=timedelta(hours=1),
+                retry_policy=retry_policy,
             )
