@@ -256,9 +256,10 @@ class InferenceStatus(ArchiveSection):
         type=str,
         description='Status of the inference action instance.',
     )
-    generated_entry = Quantity(
+    generated_entries = Quantity(
         type=CrystaLLMInferenceResult,
-        description='Reference to the generated entry after the action completes.',
+        description='Reference to the generated entries after the action completes.',
+        shape=['*'],
     )
     trigger_get_action_status = Quantity(
         type=bool,
@@ -289,19 +290,29 @@ class InferenceStatus(ArchiveSection):
             finally:
                 self.trigger_get_action_status = False
             if self.status == 'COMPLETED':
-                reference = get_reference_from_mainfile(
-                    archive.metadata.upload_id,
-                    os.path.join(
-                        self.action_instance_id, 'inference_result.archive.json'
-                    ),
+                action_dir_path = os.path.join(
+                    archive.m_context.raw_path(), self.action_instance_id
                 )
-                if not reference:
-                    logger.error(
-                        'Unable to set reference for the generated entry for '
-                        f'action {self.action_instance_id}.'
+                rel_archive_paths = []
+                for root, _, files in os.walk(action_dir_path):
+                    for file in files:
+                        if not file.endswith('.archive.json'):
+                            continue
+                        rel_archive_path = os.path.join(root, file).split('/raw/')[1]
+                        rel_archive_paths.append(rel_archive_path)
+                references = []
+                for archive_path in rel_archive_paths:
+                    reference = get_reference_from_mainfile(
+                        archive.metadata.upload_id, archive_path
                     )
-                else:
-                    self.generated_entry = reference
+                    if not reference:
+                        logger.error(
+                            'Unable to set reference for the generated entry for '
+                            f'action {self.action_instance_id}.'
+                        )
+                    else:
+                        references.append(reference)
+                self.generated_entries = references
 
 
 class PromptInput(ArchiveSection):
