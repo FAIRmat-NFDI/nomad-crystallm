@@ -305,12 +305,14 @@ class PromptInput(ArchiveSection):
 
     composition = Quantity(
         type=str,
-        description='Chemical composition to be used for prompt. For example, NaCl, Al2O3.',
+        description='Chemical composition to be used for prompt. For example, NaCl, '
+        'Al2O3.',
         a_eln=ELNAnnotation(component=ELNComponentEnum.StringEditQuantity),
     )
     num_formula_units_per_cell = Quantity(
         type=MEnum(['1', '2', '3', '4', '6', '8']),
-        description='(Optional) Number of formula units per unit cell to be used for prompt.',
+        description='(Optional) Number of formula units per unit cell to be used for '
+        'prompt.',
         a_eln=ELNAnnotation(component=ELNComponentEnum.AutocompleteEditQuantity),
     )
     space_group = Quantity(
