@@ -326,6 +326,7 @@ class PromptInput(ArchiveSection):
     )
     num_formula_units_per_cell = Quantity(
         type=MEnum(['1', '2', '3', '4', '6', '8']),
+        default='1',
         description='(Optional) Number of formula units per unit cell to be used for '
         'prompt.',
         a_eln=ELNAnnotation(component=ELNComponentEnum.AutocompleteEditQuantity),
@@ -400,16 +401,11 @@ class CrystaLLMInferenceForm(EntryData):
                 raise ValueError(
                     f'Invalid composition "{prompt.composition}": {e}'
                 ) from e
-            num_formula_units = (
-                prompt.num_formula_units_per_cell
-                if prompt.num_formula_units_per_cell
-                else ''
-            )
             space_group = prompt.space_group if prompt.space_group else ''
             prompt_construction_inputs.append(
                 PromptConstructionInput(
                     composition=prompt.composition,
-                    num_formula_units_per_cell=num_formula_units,
+                    num_formula_units_per_cell=prompt.num_formula_units_per_cell,
                     space_group=space_group,
                 )
             )
@@ -499,15 +495,10 @@ class CrystaLLMInferenceForm(EntryData):
         for prompt in self.prompt_inputs:
             if not prompt.composition:
                 continue
-            num_formula_units = (
-                prompt.num_formula_units_per_cell
-                if prompt.num_formula_units_per_cell
-                else ''
-            )
             space_group = prompt.space_group if prompt.space_group else ''
-            unique_prompts[prompt.composition + num_formula_units + space_group] = (
-                prompt
-            )
+            unique_prompts[
+                prompt.composition + prompt.num_formula_units_per_cell + space_group
+            ] = prompt
 
         self.prompt_inputs = list(unique_prompts.values())
 
