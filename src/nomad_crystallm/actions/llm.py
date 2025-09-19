@@ -133,7 +133,7 @@ def construct_prompt(
     return f'data_{comp_with_provided_factor_str}\n'
 
 
-def evaluate_model(inference_input: InferenceInput) -> InferenceOutput:
+def evaluate_model(inference_input: InferenceInput) -> list[str]:
     """
     Evaluate the model with the given parameters.
     Adapted from https://github.com/lantunes/CrystaLLM
@@ -142,7 +142,8 @@ def evaluate_model(inference_input: InferenceInput) -> InferenceOutput:
     - inference_input (InferenceInput): The input parameters for inference.
 
     Returns:
-    - InferenceOutput: The output containing generated samples.
+    - list[str]: List of generated samples from the model. Number of samples
+        is determined by `inference_input.inference_settings.num_samples`.
     """
     torch.manual_seed(inference_input.inference_settings.seed)
     torch.cuda.manual_seed(inference_input.inference_settings.seed)
@@ -185,11 +186,9 @@ def evaluate_model(inference_input: InferenceInput) -> InferenceOutput:
 
     # run generation
     # encode the beginning of the prompt
-    start_ids = encode(
-        tokenizer.tokenize_cif(inference_input.constructed_prompt.prompt)
-    )
+    start_ids = encode(tokenizer.tokenize_cif(inference_input.prompt))
     x = torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...]
-    output = InferenceOutput(generated_samples=[])
+    generated_samples = []
     with torch.no_grad():
         with ctx:
             for k in range(inference_input.inference_settings.num_samples):
@@ -199,9 +198,9 @@ def evaluate_model(inference_input: InferenceInput) -> InferenceOutput:
                     temperature=inference_input.inference_settings.temperature,
                     top_k=inference_input.inference_settings.top_k,
                 )
-                output.generated_samples.append(decode(y[0].tolist()))
+                generated_samples.append(decode(y[0].tolist()))
 
-    return output
+    return generated_samples
 
 
 def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
@@ -238,8 +237,8 @@ def write_cif_files(result: WriteResultsInput, logger: 'LoggerAdapter') -> list[
         )
     cif_paths = []
     with tempfile.TemporaryDirectory() as tmpdir:
-        for idx, sample in enumerate(result.inference_output.generated_samples):
-            fname = f'{result.constructed_prompt.composition}_{idx + 1}.cif'
+        for idx, sample in enumerate(result.generated_samples):
+            fname = f'{result.composition}_{idx + 1}.cif'
             tmp_fpath = os.path.join(tmpdir, fname)
             processed_sample = postprocess(sample, tmp_fpath, logger)
             with open(tmp_fpath, 'w', encoding='utf-8') as f:
@@ -256,7 +255,7 @@ def write_entry_archive(cif_paths, result: WriteResultsInput) -> str:
     'raw/<action_instance_id>/<relative_cif_dir>'.
     """
     inference_result = CrystaLLMInferenceResult(
-        prompt=result.constructed_prompt.prompt,
+        prompt=result.prompt,
         action_instance_id=result.action_instance_id,
         generated_cifs=cif_paths,
         inference_settings=InferenceSettings(
@@ -273,7 +272,7 @@ def write_entry_archive(cif_paths, result: WriteResultsInput) -> str:
     rel_mainfile_path = os.path.join(
         result.action_instance_id,
         result.relative_cif_dir,
-        f'crystallm_{result.constructed_prompt.composition}.archive.json',
+        f'crystallm_{result.composition}.archive.json',
     )
     # Create an entry for the inference results
     upload = get_upload(result.upload_id, result.user_id)
