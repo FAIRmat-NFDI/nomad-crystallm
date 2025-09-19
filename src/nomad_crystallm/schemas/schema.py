@@ -477,6 +477,23 @@ class CrystaLLMInferenceForm(EntryData):
 
         return prompt_inputs
 
+    def filter_prompts(self, logger):
+        """
+        Filters out duplicate prompts.
+        """
+        if not self.prompt_inputs:
+            return
+        unique_prompts = {
+            prompt.composition
+            + prompt.num_formula_units_per_cell
+            + prompt.space_group: prompt
+            for prompt in self.prompt_inputs
+            if prompt.composition
+        }
+        if len(unique_prompts) < len(self.prompt_inputs):
+            logger.warn('Duplicate prompts found. Keeping only the unique ones.')
+        self.prompt_inputs = list(unique_prompts.values())
+
     def normalize(self, archive, logger):
         """
         Sets a default for inference_settings if not provided and runs the action
@@ -487,6 +504,7 @@ class CrystaLLMInferenceForm(EntryData):
             archive, logger
         ):
             self.prompt_inputs = prompt_inputs_from_file
+        self.filter_prompts(logger)
         if self.trigger_run_action:
             try:
                 self.run_action(archive, logger)
