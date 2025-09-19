@@ -413,9 +413,13 @@ class CrystaLLMInferenceForm(EntryData):
             prompt_construction_inputs=prompt_construction_inputs,
             inference_settings=inference_settings,
         )
+        # validate input data before triggering action
+        input_data.model_validate(input_data.model_dump())
+
         action_instance_id = start_action(
             action_id='nomad_crystallm.actions:crystallm_inference', data=input_data
         )
+
         inference_status = InferenceStatus(action_instance_id=action_instance_id)
         inference_status.normalize(archive, logger)
         if not self.triggered_inferences:
