@@ -315,14 +315,12 @@ class PromptInput(ArchiveSection):
     )
     num_formula_units_per_cell = Quantity(
         type=MEnum(['1', '2', '3', '4', '6', '8']),
-        default='',
         description='(Optional) Number of formula units per unit cell to be used for '
         'prompt.',
         a_eln=ELNAnnotation(component=ELNComponentEnum.AutocompleteEditQuantity),
     )
     space_group = Quantity(
         type=MEnum(SPACE_GROUPS),
-        default='',
         description='(Optional) Space group to be used for prompt.',
         a_eln=ELNAnnotation(component=ELNComponentEnum.AutocompleteEditQuantity),
     )
@@ -388,13 +386,20 @@ class CrystaLLMInferenceForm(EntryData):
             try:
                 Composition(prompt.composition, strict=True)
             except Exception as e:
-                logger.error(f'Invalid composition "{prompt.composition}": {e}')
-                return
+                raise ValueError(
+                    f'Invalid composition "{prompt.composition}": {e}'
+                ) from e
+            num_formula_units = (
+                prompt.num_formula_units_per_cell
+                if prompt.num_formula_units_per_cell
+                else ''
+            )
+            space_group = prompt.space_group if prompt.space_group else ''
             prompt_construction_inputs.append(
                 PromptConstructionInput(
                     composition=prompt.composition,
-                    num_formula_units_per_cell=prompt.num_formula_units_per_cell,
-                    space_group=prompt.space_group,
+                    num_formula_units_per_cell=num_formula_units,
+                    space_group=space_group,
                 )
             )
         inference_settings = InferenceSettingsInput(
@@ -462,53 +467,51 @@ class CrystaLLMInferenceForm(EntryData):
                     f'prompt inputs from file {self.prompts_data_file}.'
                 )
                 return []
-            composition = str(row['composition'])
-            num_formula_units_per_cell = (
-                str(int(row['num_formula_units_per_cell']))
-                if not pd.isna(row['num_formula_units_per_cell'])
-                else ''
-            )
-            space_group = (
-                str(row['space_group']) if not pd.isna(row['space_group']) else ''
-            )
-            prompt_inputs.append(
-                PromptInput(
-                    composition=composition,
-                    num_formula_units_per_cell=num_formula_units_per_cell,
-                    space_group=space_group,
+            prompt_input = PromptInput(composition=str(row['composition']))
+            if not pd.isna(row['num_formula_units_per_cell']):
+                prompt_input.num_formula_units_per_cell = str(
+                    int(row['num_formula_units_per_cell'])
                 )
-            )
+            if not pd.isna(row['space_group']):
+                prompt_input.space_group = str(row['space_group'])
+            prompt_inputs.append(prompt_input)
 
         return prompt_inputs
 
-    def filter_prompts(self, logger):
+    def filter_prompts(self):
         """
         Filters out duplicate prompts.
         """
         if not self.prompt_inputs:
             return
-        unique_prompts = {
-            prompt.composition
-            + prompt.num_formula_units_per_cell
-            + prompt.space_group: prompt
-            for prompt in self.prompt_inputs
-            if prompt.composition
-        }
-        if len(unique_prompts) < len(self.prompt_inputs):
-            logger.warn('Duplicate prompts found. Keeping only the unique ones.')
+        unique_prompts = {}
+        for prompt in self.prompt_inputs:
+            if not prompt.composition:
+                continue
+            num_formula_units = (
+                prompt.num_formula_units_per_cell
+                if prompt.num_formula_units_per_cell
+                else ''
+            )
+            space_group = prompt.space_group if prompt.space_group else ''
+            unique_prompts[prompt.composition + num_formula_units + space_group] = (
+                prompt
+            )
+
         self.prompt_inputs = list(unique_prompts.values())
 
     def normalize(self, archive, logger):
         """
-        Sets a default for inference_settings if not provided and runs the action
-        if trigger_run_action is True.
+        Sets a default for inference_settings if not provided, reads the prompt inputs
+        from a CSV file if specified, filters out duplicate prompts, and triggers the
+        action when trigger_run_action is True.
         """
         self.m_setdefault('inference_settings')
         if prompt_inputs_from_file := self.read_prompt_inputs_from_file(
             archive, logger
         ):
-            self.prompt_inputs = prompt_inputs_from_file
-        self.filter_prompts(logger)
+            self.prompt_inputs.extend(prompt_inputs_from_file)
+        self.filter_prompts()
         if self.trigger_run_action:
             try:
                 self.run_action(archive, logger)
