@@ -23,7 +23,6 @@ from pymatgen.core import Composition
 
 from nomad_crystallm.actions.shared import (
     InferenceInput,
-    InferenceOutput,
     WriteResultsInput,
 )
 from nomad_crystallm.actions.utils import get_upload
@@ -52,13 +51,14 @@ model_data = {
 }
 
 
-async def download_model(model_name: str) -> dict:
+async def download_model(model_name: str) -> None:
     """
     Checks if the model file exists locally, and if not, downloads it from the
     provided URL.
     """
-    model_path = model_data[model_name]['model_path']
-    model_path = os.path.join(action_artifacts_dir(), model_path)
+    model_path = os.path.join(
+        action_artifacts_dir(), model_data[model_name]['model_path']
+    )
 
     model_url = model_data[model_name]['model_url']
 
@@ -68,13 +68,6 @@ async def download_model(model_name: str) -> dict:
         raise FileNotFoundError(
             f'Model file "{model_path}" does not exist and `model_url` is not provided.'
         )
-    elif exists and model_url:
-        return {
-            'model_path': model_path,
-            'model_url': model_url,
-        }
-    elif exists:
-        return {'model_path': model_path}
 
     # Download the model from the URL and copy the model file to the model_path
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -101,8 +94,6 @@ async def download_model(model_name: str) -> dict:
         # Move over the first .pt file found to the model_path
         os.makedirs(os.path.dirname(model_path), exist_ok=True)
         shutil.move(os.path.join(tmp_zipdir, model_files[0]), model_path)
-
-    return {'model_path': model_path, 'model_url': model_url}
 
 
 def construct_prompt(
@@ -167,8 +158,10 @@ def evaluate_model(inference_input: InferenceInput) -> list[str]:
     encode = tokenizer.encode
     decode = tokenizer.decode
 
-    model_path = model_data[inference_input.inference_settings.model_name]['model_path']
-    model_path = os.path.join(action_artifacts_dir(), model_path)
+    model_path = os.path.join(
+        action_artifacts_dir(),
+        model_data[inference_input.inference_settings.model_name]['model_path'],
+    )
     checkpoint = torch.load(model_path, map_location=device)
     gptconf = GPTConfig(**checkpoint['model_args'])
     model = GPT(gptconf)
