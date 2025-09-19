@@ -1,11 +1,13 @@
 import os
 
+import pandas as pd
 from ase.io import read
 from ase.spacegroup import Spacegroup
 from matid import SymmetryAnalyzer
 from nomad.actions.utils import get_action_status, start_action
 from nomad.datamodel.data import ArchiveSection, EntryData, EntryDataCategory
 from nomad.datamodel.metainfo.annotations import (
+    BrowserAnnotation,
     ELNAnnotation,
     ELNComponentEnum,
     SectionProperties,
@@ -16,7 +18,11 @@ from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
 from pymatgen.core import Composition
 
-from nomad_crystallm.actions.shared import InferenceUserInput
+from nomad_crystallm.actions.shared import (
+    InferenceSettingsInput,
+    InferenceUserInput,
+    PromptConstructionInput,
+)
 from nomad_crystallm.schemas.utils import get_reference_from_mainfile
 
 SPACE_GROUPS = [Spacegroup(i).symbol for i in range(1, 231)]
@@ -294,6 +300,26 @@ class InferenceStatus(ArchiveSection):
                     self.generated_entry = reference
 
 
+class PromptInput(ArchiveSection):
+    """Inputs for generating a prompt."""
+
+    composition = Quantity(
+        type=str,
+        description='Chemical composition to be used for prompt. For example, NaCl, Al2O3.',
+        a_eln=ELNAnnotation(component=ELNComponentEnum.StringEditQuantity),
+    )
+    num_formula_units_per_cell = Quantity(
+        type=MEnum(['1', '2', '3', '4', '6', '8']),
+        description='(Optional) Number of formula units per unit cell to be used for prompt.',
+        a_eln=ELNAnnotation(component=ELNComponentEnum.AutocompleteEditQuantity),
+    )
+    space_group = Quantity(
+        type=MEnum(SPACE_GROUPS),
+        description='(Optional) Space group to be used for prompt.',
+        a_eln=ELNAnnotation(component=ELNComponentEnum.AutocompleteEditQuantity),
+    )
+
+
 class CrystaLLMInferenceForm(EntryData):
     """Inference form for running CrystaLLM inference actions."""
 
@@ -302,24 +328,15 @@ class CrystaLLMInferenceForm(EntryData):
         categories=[ActionCategory],
         description='Form to run CrystaLLM inference actions from the ELN interface.',
     )
-
-    # TODO: Add field to upload a file containing multiple prompts.
-    composition = Quantity(
+    prompts_data_file = Quantity(
         type=str,
-        description='Chemical composition to be used for prompt. '
-        'For example, NaCl, Al2O3.',
-        a_eln=ELNAnnotation(component=ELNComponentEnum.StringEditQuantity),
-    )
-    num_formula_units_per_cell = Quantity(
-        type=MEnum(['1', '2', '3', '4', '6', '8']),
-        description='(Optional) Number of formula units per unit cell to be used for '
-        'prompt.',
-        a_eln=ELNAnnotation(component=ELNComponentEnum.AutocompleteEditQuantity),
-    )
-    space_group = Quantity(
-        type=MEnum(SPACE_GROUPS),
-        description='(Optional) Space group to be used for prompt.',
-        a_eln=ELNAnnotation(component=ELNComponentEnum.AutocompleteEditQuantity),
+        description='Path to a CSV file containing multiple prompt generation inputs. '
+        'The first line should be the header containing the column names: composition, '
+        'num_formula_units_per_cell, space_group. Each subsequent line should be '
+        'formatted as: <composition>, <num_formula_units_per_cell>, <space_group>. '
+        'The composition field is required, while the other two are optional.',
+        a_eln=ELNAnnotation(component=ELNComponentEnum.FileEditQuantity),
+        a_browser=BrowserAnnotation(adaptor='RawFileAdaptor'),
     )
     trigger_run_action = Quantity(
         type=bool,
@@ -328,6 +345,11 @@ class CrystaLLMInferenceForm(EntryData):
             component=ELNComponentEnum.ActionEditQuantity,
             label='Run Inference Action',
         ),
+    )
+    prompt_inputs = SubSection(
+        section_def=PromptInput,
+        description='List of prompt generation inputs.',
+        repeats=True,
     )
     inference_settings = SubSection(
         section_def=InferenceSettingsForm,
@@ -364,18 +386,17 @@ class CrystaLLMInferenceForm(EntryData):
             return
         if not self.inference_settings:
             self.inference_settings = InferenceSettingsForm()
-        input_data = InferenceUserInput(
-            user_id=archive.metadata.authors[0].user_id,
-            upload_id=archive.metadata.upload_id,
-            input_composition=self.composition,
-            input_num_formula_units_per_cell=self.num_formula_units_per_cell or '',
-            input_space_group=self.space_group or '',
-            generate_cif=True,
-            model_path=f'models/{self.inference_settings.model}/ckpt.pt',
-            model_url=(
-                'https://zenodo.org/records/10642388/files/'
-                f'{self.inference_settings.model}.tar.gz'
-            ),
+        prompt_construction_inputs = []
+        for prompt in self.prompt_inputs:
+            prompt_construction_inputs.append(
+                PromptConstructionInput(
+                    composition=prompt.composition,
+                    num_formula_units_per_cell=prompt.num_formula_units_per_cell,
+                    space_group=prompt.space_group,
+                )
+            )
+        inference_settings = InferenceSettingsInput(
+            model_name=self.inference_settings.model,
             num_samples=self.inference_settings.num_samples,
             max_new_tokens=self.inference_settings.max_new_tokens,
             temperature=self.inference_settings.temperature,
@@ -383,6 +404,12 @@ class CrystaLLMInferenceForm(EntryData):
             seed=self.inference_settings.seed,
             dtype=self.inference_settings.dtype,
             compile=self.inference_settings.compile,
+        )
+        input_data = InferenceUserInput(
+            user_id=archive.metadata.authors[0].user_id,
+            upload_id=archive.metadata.upload_id,
+            prompt_construction_inputs=prompt_construction_inputs,
+            inference_settings=inference_settings,
         )
         action_instance_id = start_action(
             action_id='nomad_crystallm.actions:crystallm_inference', data=input_data
@@ -394,12 +421,65 @@ class CrystaLLMInferenceForm(EntryData):
 
         self.triggered_inferences[-1].action_id = action_instance_id
 
+    def read_prompt_inputs_from_file(self, archive, logger=None) -> list[PromptInput]:
+        """
+        Reads prompt inputs from a CSV file specified in `prompts_data_file`.
+        The CSV file should have the following columns:
+        - composition
+        - num_formula_units_per_cell
+        - space_group
+        The `composition` column is required, while the other two are optional.
+        """
+        if not self.prompts_data_file:
+            logger.warn('No prompts data file provided.')
+            return []
+
+        with archive.m_context.raw_file(self.prompts_data_file) as f:
+            df = pd.read_csv(f)
+
+        required_columns = {
+            'composition',
+            'num_formula_units_per_cell',
+            'space_group',
+        }
+        if not required_columns.issubset(df.columns):
+            logger.error(
+                f'CSV file must contain the following columns: {required_columns}'
+            )
+            return []
+        prompt_inputs = []
+        for _, row in df.iterrows():
+            if pd.isna(row['composition']):
+                logger.error('`composition` cannot be empty in the CSV file.')
+                return []
+            composition = str(row['composition'])
+            num_formula_units_per_cell = (
+                str(int(row['num_formula_units_per_cell']))
+                if not pd.isna(row['num_formula_units_per_cell'])
+                else ''
+            )
+            space_group = (
+                str(row['space_group']) if not pd.isna(row['space_group']) else ''
+            )
+            prompt_inputs.append(
+                PromptInput(
+                    composition=composition,
+                    num_formula_units_per_cell=num_formula_units_per_cell,
+                    space_group=space_group,
+                )
+            )
+
+        return prompt_inputs
+
     def normalize(self, archive, logger=None):
         """
         Sets a default for inference_settings if not provided and runs the action
         if trigger_run_action is True.
         """
         self.m_setdefault('inference_settings')
+        prompt_inputs_from_file = self.read_prompt_inputs_from_file(archive, logger)
+        if prompt_inputs_from_file:
+            self.prompt_inputs = prompt_inputs_from_file
         if self.trigger_run_action:
             try:
                 self.run_action(archive, logger)
