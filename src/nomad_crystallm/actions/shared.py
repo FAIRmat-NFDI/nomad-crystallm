@@ -10,7 +10,7 @@ class PromptConstructionInput(BaseModel):
     composition: str = Field(
         ..., description='Composition to use as a prompt for the model.'
     )
-    num_formula_units_per_cell: NumFormulaUnitsPerCell = Field(
+    num_formula_units_per_cell: NumFormulaUnitsPerCellLiteral = Field(
         '', description='Number of formula units per cell.'
     )
     space_group: SpaceGroupLiteral = Field(
@@ -330,4 +330,4 @@ SpaceGroupLiteral = Literal[
     'I a -3 d',
 ]
 
-NumFormulaUnitsPerCell = Literal['', '1', '2', '3', '4', '6', '8']
+NumFormulaUnitsPerCellLiteral = Literal['', '1', '2', '3', '4', '6', '8']
