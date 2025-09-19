@@ -7,13 +7,13 @@ from pydantic import BaseModel, Field
 
 
 class PromptConstructionInput(BaseModel):
-    input_composition: str = Field(
+    composition: str = Field(
         ..., description='Composition to use as a prompt for the model.'
     )
-    input_num_formula_units_per_cell: NumFormulaUnitsPerCell = Field(
+    num_formula_units_per_cell: NumFormulaUnitsPerCell = Field(
         '', description='Number of formula units per cell.'
     )
-    input_space_group: SpaceGroupLiteral = Field(
+    space_group: SpaceGroupLiteral = Field(
         '', description='Space group to use in the prompt.'
     )
 

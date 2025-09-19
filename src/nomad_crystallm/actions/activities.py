@@ -19,9 +19,9 @@ async def get_prompt(data: PromptConstructionInput) -> str:
     from .llm import construct_prompt
 
     return construct_prompt(
-        data.input_composition,
-        data.input_num_formula_units_per_cell,
-        data.input_space_group,
+        data.composition,
+        data.num_formula_units_per_cell,
+        data.space_group,
     )
 
 

@@ -246,15 +246,15 @@ class InferenceSettingsForm(ArchiveSection):
 
 
 class InferenceStatus(ArchiveSection):
-    """Section to fetch the status of an inference action."""
+    """Section to fetch the status of an inference action instance."""
 
-    action_id = Quantity(
+    action_instance_id = Quantity(
         type=str,
-        description='ID of the inference action.',
+        description='ID of the inference action instance.',
     )
     status = Quantity(
         type=str,
-        description='Status of the inference action.',
+        description='Status of the inference action instance.',
     )
     generated_entry = Quantity(
         type=CrystaLLMInferenceResult,
@@ -279,7 +279,9 @@ class InferenceStatus(ArchiveSection):
             or self.trigger_get_action_status
         ):
             try:
-                status = get_action_status(self.action_id, archive.metadata.authors[0])
+                status = get_action_status(
+                    self.action_instance_id, archive.metadata.authors[0].user_id
+                )
                 if status:
                     self.status = status.name
             except Exception as e:
@@ -289,12 +291,14 @@ class InferenceStatus(ArchiveSection):
             if self.status == 'COMPLETED':
                 reference = get_reference_from_mainfile(
                     archive.metadata.upload_id,
-                    os.path.join(self.action_id, 'inference_result.archive.json'),
+                    os.path.join(
+                        self.action_instance_id, 'inference_result.archive.json'
+                    ),
                 )
                 if not reference:
                     logger.error(
                         'Unable to set reference for the generated entry for '
-                        f'action {self.action_id}.'
+                        f'action {self.action_instance_id}.'
                     )
                 else:
                     self.generated_entry = reference
@@ -311,12 +315,14 @@ class PromptInput(ArchiveSection):
     )
     num_formula_units_per_cell = Quantity(
         type=MEnum(['1', '2', '3', '4', '6', '8']),
+        default='',
         description='(Optional) Number of formula units per unit cell to be used for '
         'prompt.',
         a_eln=ELNAnnotation(component=ELNComponentEnum.AutocompleteEditQuantity),
     )
     space_group = Quantity(
         type=MEnum(SPACE_GROUPS),
+        default='',
         description='(Optional) Space group to be used for prompt.',
         a_eln=ELNAnnotation(component=ELNComponentEnum.AutocompleteEditQuantity),
     )
@@ -364,32 +370,26 @@ class CrystaLLMInferenceForm(EntryData):
         repeats=True,
     )
 
-    def run_action(self, archive, logger=None):
+    def run_action(self, archive, logger):
         """
         Run the CrystaLLM inference action with the provided archive.
         Uses the first author's credentials to run the action.
         """
-        if not self.composition:
+        if not self.prompt_inputs:
             logger.warn(
-                'No composition provided for the CrystaLLM inference prompt. '
+                'No prompt inputs provided for the CrystaLLM inference action. '
                 'Cannot run the action.'
-            )
-            return
-        try:
-            Composition(self.composition, strict=True)
-        except Exception as e:
-            logger.error(f'Invalid composition "{self.composition}": {e}')
-            return
-        if not archive.metadata.authors:
-            logger.warn(
-                'No authors found in the archive metadata. '
-                'Cannot run CrystaLLM inference action.'
             )
             return
         if not self.inference_settings:
             self.inference_settings = InferenceSettingsForm()
         prompt_construction_inputs = []
         for prompt in self.prompt_inputs:
+            try:
+                Composition(prompt.composition, strict=True)
+            except Exception as e:
+                logger.error(f'Invalid composition "{prompt.composition}": {e}')
+                return
             prompt_construction_inputs.append(
                 PromptConstructionInput(
                     composition=prompt.composition,
@@ -416,14 +416,14 @@ class CrystaLLMInferenceForm(EntryData):
         action_instance_id = start_action(
             action_id='nomad_crystallm.actions:crystallm_inference', data=input_data
         )
+        inference_status = InferenceStatus(action_instance_id=action_instance_id)
+        inference_status.normalize(archive, logger)
         if not self.triggered_inferences:
-            self.triggered_inferences = [InferenceStatus()]
+            self.triggered_inferences = [inference_status]
         else:
-            self.triggered_inferences.append(InferenceStatus())
+            self.triggered_inferences.append(inference_status)
 
-        self.triggered_inferences[-1].action_id = action_instance_id
-
-    def read_prompt_inputs_from_file(self, archive, logger=None) -> list[PromptInput]:
+    def read_prompt_inputs_from_file(self, archive, logger) -> list[PromptInput]:
         """
         Reads prompt inputs from a CSV file specified in `prompts_data_file`.
         The CSV file should have the following columns:
@@ -433,7 +433,6 @@ class CrystaLLMInferenceForm(EntryData):
         The `composition` column is required, while the other two are optional.
         """
         if not self.prompts_data_file:
-            logger.warn('No prompts data file provided.')
             return []
 
         with archive.m_context.raw_file(self.prompts_data_file) as f:
@@ -446,13 +445,18 @@ class CrystaLLMInferenceForm(EntryData):
         }
         if not required_columns.issubset(df.columns):
             logger.error(
-                f'CSV file must contain the following columns: {required_columns}'
+                f'CSV file must contain the following columns: {required_columns}. '
+                f'Provided columns: {set(df.columns)}. Not reading prompt inputs from '
+                f'file {self.prompts_data_file}.'
             )
             return []
         prompt_inputs = []
         for _, row in df.iterrows():
             if pd.isna(row['composition']):
-                logger.error('`composition` cannot be empty in the CSV file.')
+                logger.error(
+                    '`composition` cannot be empty in the CSV file. Not reading '
+                    f'prompt inputs from file {self.prompts_data_file}.'
+                )
                 return []
             composition = str(row['composition'])
             num_formula_units_per_cell = (
@@ -473,14 +477,15 @@ class CrystaLLMInferenceForm(EntryData):
 
         return prompt_inputs
 
-    def normalize(self, archive, logger=None):
+    def normalize(self, archive, logger):
         """
         Sets a default for inference_settings if not provided and runs the action
         if trigger_run_action is True.
         """
         self.m_setdefault('inference_settings')
-        prompt_inputs_from_file = self.read_prompt_inputs_from_file(archive, logger)
-        if prompt_inputs_from_file:
+        if prompt_inputs_from_file := self.read_prompt_inputs_from_file(
+            archive, logger
+        ):
             self.prompt_inputs = prompt_inputs_from_file
         if self.trigger_run_action:
             try:
