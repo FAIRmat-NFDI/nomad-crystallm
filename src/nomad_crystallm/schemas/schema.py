@@ -398,7 +398,7 @@ class CrystaLLMInferenceForm(EntryData):
                 )
             )
         inference_settings = InferenceSettingsInput(
-            model_name=self.inference_settings.model,
+            model=self.inference_settings.model,
             num_samples=self.inference_settings.num_samples,
             max_new_tokens=self.inference_settings.max_new_tokens,
             temperature=self.inference_settings.temperature,

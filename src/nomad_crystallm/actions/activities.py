@@ -8,10 +8,10 @@ from nomad_crystallm.actions.shared import (
 
 
 @activity.defn
-async def get_model(model_name) -> None:
+async def get_model(model: str) -> None:
     from .llm import download_model
 
-    await download_model(model_name)
+    await download_model(model)
 
 
 @activity.defn

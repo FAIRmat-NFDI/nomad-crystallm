@@ -19,20 +19,20 @@ class PromptConstructionInput(BaseModel):
 
 
 class InferenceSettingsInput(BaseModel):
-    model_name: Literal['crystallm_v1_small', 'crystallm_v1_large'] = Field(
+    model: Literal['crystallm_v1_small', 'crystallm_v1_large'] = Field(
         'crystallm_v1_small', description='Name of the model to use.'
     )
     num_samples: int = Field(
-        2, min=1, max=5, description='Number of samples to generate.'
+        1, ge=1, le=5, description='Number of samples to generate.'
     )
     max_new_tokens: int = Field(
-        3000, min=100, max=1000, description='Maximum number of tokens to generate.'
+        3000, ge=1, le=10000, description='Maximum number of tokens to generate.'
     )
     temperature: float = Field(
-        0.8, min=0.0, max=1.0, description='Temperature for sampling.'
+        0.8, ge=0.0, le=1.0, description='Temperature for sampling.'
     )
-    top_k: int = Field(10, min=1, max=100, description='Top-k sampling.')
-    seed: int = Field(1337, min=0, description='Random seed for reproducibility.')
+    top_k: int = Field(10, ge=1, le=100, description='Top-k sampling.')
+    seed: int = Field(1337, ge=0, description='Random seed for reproducibility.')
     dtype: Literal['bfloat16', 'float16', 'float32'] = Field(
         'bfloat16', description='Data type for the model (based on PyTorch data types).'
     )

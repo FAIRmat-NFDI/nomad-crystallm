@@ -24,7 +24,7 @@ class InferenceWorkflow:
         retry_policy = RetryPolicy(maximum_attempts=3)
         await workflow.execute_activity(
             get_model,
-            data.inference_settings.model_name,
+            data.inference_settings.model,
             start_to_close_timeout=timedelta(hours=1),
             retry_policy=retry_policy,
         )

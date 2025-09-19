@@ -51,16 +51,14 @@ model_data = {
 }
 
 
-async def download_model(model_name: str) -> None:
+async def download_model(model: str) -> None:
     """
     Checks if the model file exists locally, and if not, downloads it from the
     provided URL.
     """
-    model_path = os.path.join(
-        action_artifacts_dir(), model_data[model_name]['model_path']
-    )
+    model_path = os.path.join(action_artifacts_dir(), model_data[model]['model_path'])
 
-    model_url = model_data[model_name]['model_url']
+    model_url = model_data[model]['model_url']
 
     # Check if file exists asynchronously
     exists = await asyncio.to_thread(os.path.exists, model_path)
@@ -160,7 +158,7 @@ def evaluate_model(inference_input: InferenceInput) -> list[str]:
 
     model_path = os.path.join(
         action_artifacts_dir(),
-        model_data[inference_input.inference_settings.model_name]['model_path'],
+        model_data[inference_input.inference_settings.model]['model_path'],
     )
     checkpoint = torch.load(model_path, map_location=device)
     gptconf = GPTConfig(**checkpoint['model_args'])
@@ -252,7 +250,7 @@ def write_entry_archive(cif_paths, result: WriteResultsInput) -> str:
         action_instance_id=result.action_instance_id,
         generated_cifs=cif_paths,
         inference_settings=InferenceSettings(
-            model=result.inference_settings.model_name,
+            model=result.inference_settings.model,
             num_samples=result.inference_settings.num_samples,
             max_new_tokens=result.inference_settings.max_new_tokens,
             temperature=result.inference_settings.temperature,
