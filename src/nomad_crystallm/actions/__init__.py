@@ -14,6 +14,9 @@ class CrystaLLMInferenceEntryPoint(ActionEntryPoint):
     task_queue: str = Field(
         default=TaskQueue.CPU, description='Determines the task queue for this action'
     )
+    num_prompts_per_action: int = Field(
+        default=1, description='Number of prompts to process in one action instance.'
+    )
 
     def load(self):
         from nomad.actions import Action
@@ -21,6 +24,7 @@ class CrystaLLMInferenceEntryPoint(ActionEntryPoint):
         from nomad_crystallm.actions.activities import (
             get_model,
             get_prompt,
+            limit_prompts
             run_inference,
             write_results,
         )
@@ -29,7 +33,13 @@ class CrystaLLMInferenceEntryPoint(ActionEntryPoint):
         return Action(
             task_queue=self.task_queue,
             workflow=InferenceWorkflow,
-            activities=[get_model, get_prompt, run_inference, write_results],
+            activities=[
+                get_model,
+                get_prompt,
+                limit_prompts,
+                run_inference,
+                write_results,
+            ],
         )
 
 
