@@ -1,3 +1,4 @@
+from nomad.config import config
 from temporalio import activity
 
 from nomad_crystallm.actions.shared import (
@@ -5,6 +6,17 @@ from nomad_crystallm.actions.shared import (
     PromptConstructionInput,
     WriteResultsInput,
 )
+
+action_config = config.get_plugin_entry_point(
+    'nomad_crystallm.actions:crystallm_inference'
+)
+
+
+@activity.defn
+async def limit_prompts(
+    data: list[PromptConstructionInput],
+) -> list[PromptConstructionInput]:
+    return data[: action_config.num_prompts_per_action]
 
 
 @activity.defn

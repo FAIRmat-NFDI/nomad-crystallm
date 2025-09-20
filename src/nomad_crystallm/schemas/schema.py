@@ -5,6 +5,7 @@ from ase.io import read
 from ase.spacegroup import Spacegroup
 from matid import SymmetryAnalyzer
 from nomad.actions.utils import get_action_status, start_action
+from nomad.config import config
 from nomad.datamodel.data import ArchiveSection, EntryData, EntryDataCategory
 from nomad.datamodel.metainfo.annotations import (
     BrowserAnnotation,
@@ -24,6 +25,10 @@ from nomad_crystallm.actions.shared import (
     PromptConstructionInput,
 )
 from nomad_crystallm.schemas.utils import get_reference_from_mainfile
+
+action_config = config.get_plugin_entry_point(
+    'nomad_crystallm.actions:crystallm_inference'
+)
 
 SPACE_GROUPS = [Spacegroup(i).symbol for i in range(1, 231)]
 
@@ -419,13 +424,26 @@ class CrystaLLMInferenceForm(EntryData):
             dtype=self.inference_settings.dtype,
             compile=self.inference_settings.compile,
         )
-        input_data = InferenceUserInput(
-            user_id=archive.metadata.authors[0].user_id,
-            upload_id=archive.metadata.upload_id,
-            prompt_construction_inputs=prompt_construction_inputs,
-            inference_settings=inference_settings,
+
+        total_batches = len(
+            prompt_construction_inputs
+        ) // action_config.num_prompts_per_action + (
+            1
+            if len(prompt_construction_inputs) % action_config.num_prompts_per_action
+            > 0
+            else 0
         )
+        for batch in range(total_batches):
+            input_data = InferenceUserInput(
+                user_id=archive.metadata.authors[0].user_id,
+                upload_id=archive.metadata.upload_id,
+                prompt_construction_inputs=prompt_construction_inputs,
+                inference_settings=inference_settings,
+            )
         # validate input data before triggering action
+
+        # TODO is it possible to set a limit on the number of prompt inputs in Pydantic
+        # model? So that it also reflects in the form.
         input_data.model_validate(input_data.model_dump())
 
         action_instance_id = start_action(
