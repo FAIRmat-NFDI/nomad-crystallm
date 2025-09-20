@@ -6,29 +6,33 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-class PromptGenerationInput(BaseModel):
-    input_composition: str = Field(
+class PromptConstructionInput(BaseModel):
+    composition: str = Field(
         ..., description='Composition to use as a prompt for the model.'
     )
-    input_num_formula_units_per_cell: NumFormulaUnitsPerCell = Field(
-        '', description='Number of formula units per cell.'
+    num_formula_units_per_cell: NumFormulaUnitsPerCellLiteral = Field(
+        '1', description='Number of formula units per cell.'
     )
-    input_space_group: SpaceGroupLiteral = Field(
+    space_group: SpaceGroupLiteral = Field(
         '', description='Space group to use in the prompt.'
     )
 
 
 class InferenceSettingsInput(BaseModel):
-    model_name: Literal['crystallm_v1_small', 'crystallm_v1_large'] = Field(
+    model: Literal['crystallm_v1_small', 'crystallm_v1_large'] = Field(
         'crystallm_v1_small', description='Name of the model to use.'
     )
-    num_samples: int = Field(2, description='Number of samples to generate.')
-    max_new_tokens: int = Field(
-        3000, description='Maximum number of tokens to generate.'
+    num_samples: int = Field(
+        1, ge=1, le=5, description='Number of samples to generate.'
     )
-    temperature: float = Field(0.8, description='Temperature for sampling.')
-    top_k: int = Field(10, description='Top-k sampling.')
-    seed: int = Field(1337, description='Random seed for reproducibility.')
+    max_new_tokens: int = Field(
+        3000, ge=1, le=10000, description='Maximum number of tokens to generate.'
+    )
+    temperature: float = Field(
+        0.8, ge=0.0, le=1.0, description='Temperature for sampling.'
+    )
+    top_k: int = Field(10, ge=1, le=100, description='Top-k sampling.')
+    seed: int = Field(1337, ge=0, description='Random seed for reproducibility.')
     dtype: Literal['bfloat16', 'float16', 'float32'] = Field(
         'bfloat16', description='Data type for the model (based on PyTorch data types).'
     )
@@ -37,64 +41,17 @@ class InferenceSettingsInput(BaseModel):
     )
 
 
-class PromptGenerationTextInput(BaseModel):
-    prompt_generation_inputs: list[PromptGenerationInput] = Field(
-        ...,
-        description='List of prompt generation inputs.',
-        title='Prompt Generation Inputs',
-    )
-    input_type: Literal['text'] = Field(hidden=True)
-
-
-class PromptGenerationFileInput(BaseModel):
-    filepath: str = Field(
-        ...,
-        description='Path of a CSV file containing prompt generation inputs, '
-        'relative to the raw folder of the specified upload.',
-        title='Filepath',
-    )
-    input_type: Literal['filepath']
-
-
 class InferenceUserInput(BaseModel):
     upload_id: str = Field(..., description='ID of the NOMAD upload to save results.')
     user_id: str = Field(..., description='ID of the user making the request.')
-    prompter: PromptGenerationTextInput | PromptGenerationFileInput = Field(
-        discriminator='input_type'
+    prompt_construction_inputs: list[PromptConstructionInput] = Field(
+        ...,
+        description='List of prompt construction inputs.',
+        title='Prompt Construction Inputs',
     )
     inference_settings: InferenceSettingsInput = Field(
         ..., description='Inference settings for the model.', title='Inference Settings'
     )
-
-
-@dataclass
-class ConstructPromptInput:
-    """
-    Input data for constructing prompts.
-
-    Attributes:
-    - prompter: Prompt generation input, either text or file-based.
-    - upload_id: ID of the NOMAD upload to save results.
-    - user_id: ID of the user making the request.
-    """
-
-    prompter: PromptGenerationTextInput | PromptGenerationFileInput
-    upload_id: str
-    user_id: str
-
-
-@dataclass
-class ConstructPromptOutput:
-    """
-    Output data for prompt construction.
-
-    Attributes:
-    - prompt: Constructed prompt.
-    - composition: Composition corresponding to the prompt.
-    """
-
-    prompt: str
-    composition: str
 
 
 @dataclass
@@ -108,21 +65,8 @@ class InferenceInput:
     - inference_settings: Settings for the model inference.
     """
 
-    constructed_prompt: ConstructPromptOutput
+    prompt: str
     inference_settings: InferenceSettingsInput
-
-
-@dataclass
-class InferenceOutput:
-    """
-    Output data from the model inference.
-
-    Attributes:
-    - generated_samples: List of generated samples from the model. Number of samples
-        is determined by the `num_samples` attribute in InferenceSettingsInput.
-    """
-
-    generated_samples: list[str]
 
 
 @dataclass
@@ -136,19 +80,20 @@ class WriteResultsInput:
     - action_instance_id: ID of the action instance; will be used to create a subfolder
         under the raw folder of the upload.
     - relative_cif_dir: Directory for the CIF files relative to the action instance dir.
-    - constructed_prompt: Composition of the material.
+    - composition: Composition used for the prompt.
     - prompt: Prompt used for the model.
     - inference_settings: Settings for the model inference.
-    - inference_output: Output from the model containing generated samples.
+    - generated_samples: Output from the model containing generated samples.
     """
 
     upload_id: str
     user_id: str
     action_instance_id: str
     relative_cif_dir: str
-    constructed_prompt: ConstructPromptOutput
+    composition: str
+    prompt: str
     inference_settings: InferenceSettingsInput
-    inference_output: InferenceOutput
+    generated_samples: list[str]
 
 
 SpaceGroupLiteral = Literal[
@@ -385,4 +330,4 @@ SpaceGroupLiteral = Literal[
     'I a -3 d',
 ]
 
-NumFormulaUnitsPerCell = Literal['', '1', '2', '3', '4', '6', '8']
+NumFormulaUnitsPerCellLiteral = Literal['1', '2', '3', '4', '6', '8']
