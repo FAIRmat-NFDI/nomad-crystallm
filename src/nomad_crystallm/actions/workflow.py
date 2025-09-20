@@ -7,6 +7,7 @@ with workflow.unsafe.imports_passed_through():
     from nomad_crystallm.actions.activities import (
         get_model,
         get_prompt,
+        limit_prompts,
         run_inference,
         write_results,
     )
@@ -22,6 +23,12 @@ class InferenceWorkflow:
     @workflow.run
     async def run(self, data: InferenceUserInput) -> None:
         retry_policy = RetryPolicy(maximum_attempts=3)
+        data.prompt_construction_inputs = await workflow.execute_activity(
+            limit_prompts,
+            data.prompt_construction_inputs,
+            start_to_close_timeout=timedelta(minutes=5),
+            retry_policy=retry_policy,
+        )
         await workflow.execute_activity(
             get_model,
             data.inference_settings.model,
