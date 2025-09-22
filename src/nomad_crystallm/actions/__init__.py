@@ -24,7 +24,7 @@ class CrystaLLMInferenceEntryPoint(ActionEntryPoint):
         from nomad_crystallm.actions.activities import (
             get_model,
             get_prompt,
-            limit_prompts
+            limit_prompts,
             run_inference,
             write_results,
         )
