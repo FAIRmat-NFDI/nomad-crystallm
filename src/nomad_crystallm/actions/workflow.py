@@ -5,13 +5,12 @@ from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
     from nomad_crystallm.actions.activities import (
-        construct_prompts,
         get_model,
+        get_prompt,
         run_inference,
         write_results,
     )
     from nomad_crystallm.actions.shared import (
-        ConstructPromptInput,
         InferenceInput,
         InferenceUserInput,
         WriteResultsInput,
@@ -23,26 +22,25 @@ class InferenceWorkflow:
     @workflow.run
     async def run(self, data: InferenceUserInput) -> None:
         retry_policy = RetryPolicy(maximum_attempts=3)
-        constructed_prompts = await workflow.execute_activity(
-            construct_prompts,
-            ConstructPromptInput(
-                prompter=data.prompter,
-                upload_id=data.upload_id,
-                user_id=data.user_id,
-            ),
+        await workflow.execute_activity(
+            get_model,
+            data.inference_settings.model,
             start_to_close_timeout=timedelta(hours=1),
             retry_policy=retry_policy,
         )
-        await workflow.execute_activity(
-            get_model,
-            data.inference_settings.model_name,
-            start_to_close_timeout=timedelta(hours=1),
-        )
-        for idx, constructed_prompt in enumerate(constructed_prompts):
-            inference_output = await workflow.execute_activity(
+        for idx, prompt_construction_input in enumerate(
+            data.prompt_construction_inputs
+        ):
+            prompt = await workflow.execute_activity(
+                get_prompt,
+                prompt_construction_input,
+                start_to_close_timeout=timedelta(hours=1),
+                retry_policy=retry_policy,
+            )
+            generated_samples = await workflow.execute_activity(
                 run_inference,
                 InferenceInput(
-                    constructed_prompt=constructed_prompt,
+                    prompt=prompt,
                     inference_settings=data.inference_settings,
                 ),
                 start_to_close_timeout=timedelta(hours=1),
@@ -55,11 +53,12 @@ class InferenceWorkflow:
                     upload_id=data.upload_id,
                     action_instance_id=workflow.info().workflow_id,
                     relative_cif_dir=(
-                        f'composition_{idx + 1}_{constructed_prompt.composition}'
+                        f'composition_{idx + 1}_{prompt_construction_input.composition}'
                     ),
-                    constructed_prompt=constructed_prompt,
+                    composition=prompt_construction_input.composition,
+                    prompt=prompt,
                     inference_settings=data.inference_settings,
-                    inference_output=inference_output,
+                    generated_samples=generated_samples,
                 ),
                 start_to_close_timeout=timedelta(hours=1),
                 retry_policy=retry_policy,
