@@ -4,7 +4,7 @@ import pandas as pd
 from ase.io import read
 from ase.spacegroup import Spacegroup
 from matid import SymmetryAnalyzer
-from nomad.actions.utils import get_action_status, start_action
+from nomad.actions.manager import get_action_status, start_action
 from nomad.datamodel.data import ArchiveSection, EntryData, EntryDataCategory
 from nomad.datamodel.metainfo.annotations import (
     BrowserAnnotation,

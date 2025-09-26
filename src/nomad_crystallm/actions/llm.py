@@ -17,7 +17,7 @@ from crystallm import (
     remove_atom_props_block,
     replace_symmetry_operators,
 )
-from nomad.actions.utils import action_artifacts_dir, get_upload_files
+from nomad.actions.manager import action_artifacts_dir, get_upload_files
 from nomad.datamodel import ServerContext
 from pymatgen.core import Composition
 
