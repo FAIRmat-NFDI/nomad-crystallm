@@ -67,6 +67,9 @@ async def download_model(model: str) -> None:
             f'Model file "{model_path}" does not exist and `model_url` is not provided.'
         )
 
+    if exists:
+        return
+
     # Download the model from the URL and copy the model file to the model_path
     with tempfile.TemporaryDirectory() as tmpdir:
         async with aiohttp.ClientSession() as session:
