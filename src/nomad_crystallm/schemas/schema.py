@@ -18,7 +18,7 @@ from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
 from pymatgen.core import Composition
 
-from nomad_crystallm.actions.shared import (
+from nomad_crystallm.actions.inference.models import (
     InferenceSettingsInput,
     InferenceUserInput,
     PromptConstructionInput,

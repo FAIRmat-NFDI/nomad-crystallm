@@ -21,7 +21,7 @@ from nomad.actions.manager import action_artifacts_dir, get_upload_files
 from nomad.datamodel import ServerContext
 from pymatgen.core import Composition
 
-from nomad_crystallm.actions.shared import (
+from nomad_crystallm.actions.inference.models import (
     InferenceInput,
     WriteResultsInput,
 )
