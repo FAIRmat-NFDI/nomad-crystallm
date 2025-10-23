@@ -1,5 +1,4 @@
 from nomad.actions import TaskQueue
-from pydantic import Field
 from temporalio import workflow
 
 with workflow.unsafe.imports_passed_through():
@@ -10,10 +9,6 @@ class CrystaLLMInferenceEntryPoint(ActionEntryPoint):
     """
     Entry point for the nomad-crystallm inference action.
     """
-
-    task_queue: str = Field(
-        default=TaskQueue.CPU, description='Determines the task queue for this action'
-    )
 
     def load(self):
         from nomad.actions import Action
@@ -35,7 +30,7 @@ class CrystaLLMInferenceEntryPoint(ActionEntryPoint):
 
 crystallm_inference = CrystaLLMInferenceEntryPoint(
     name='CrystaLLM Inference',
-    plugin_package='FAIRmat-NFDI/nomad-crystallm',
+    task_queue=TaskQueue.CPU,
     description='Perform inference using the CrystaLLM model to generate crystal '
     'structures from chemical compositions.',
 )
