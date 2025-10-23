@@ -25,11 +25,11 @@ from nomad_crystallm.actions.shared import (
     InferenceInput,
     WriteResultsInput,
 )
-from nomad_crystallm.actions.utils import get_upload
 from nomad_crystallm.schemas.schema import (
     CrystaLLMInferenceResult,
     InferenceSettings,
 )
+from nomad_crystallm.utils import get_upload
 
 if TYPE_CHECKING:
     from logging import LoggerAdapter

@@ -23,7 +23,7 @@ from nomad_crystallm.actions.shared import (
     InferenceUserInput,
     PromptConstructionInput,
 )
-from nomad_crystallm.schemas.utils import get_reference_from_mainfile
+from nomad_crystallm.utils import get_reference_from_mainfile
 
 SPACE_GROUPS = [Spacegroup(i).symbol for i in range(1, 231)]
 
