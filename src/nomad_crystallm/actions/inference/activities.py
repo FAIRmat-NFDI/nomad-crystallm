@@ -1,6 +1,6 @@
 from temporalio import activity
 
-from nomad_crystallm.actions.shared import (
+from nomad_crystallm.actions.inference.models import (
     InferenceInput,
     PromptConstructionInput,
     WriteResultsInput,
@@ -9,14 +9,14 @@ from nomad_crystallm.actions.shared import (
 
 @activity.defn
 async def get_model(model: str) -> None:
-    from .llm import download_model
+    from nomad_crystallm.actions.inference.utils import download_model
 
     await download_model(model)
 
 
 @activity.defn
 async def get_prompt(data: PromptConstructionInput) -> str:
-    from .llm import construct_prompt
+    from nomad_crystallm.actions.inference.utils import construct_prompt
 
     return construct_prompt(
         data.composition,
@@ -27,7 +27,7 @@ async def get_prompt(data: PromptConstructionInput) -> str:
 
 @activity.defn
 async def run_inference(data: InferenceInput) -> list[str]:
-    from .llm import evaluate_model
+    from nomad_crystallm.actions.inference.utils import evaluate_model
 
     return evaluate_model(data)
 
@@ -37,7 +37,10 @@ async def write_results(data: WriteResultsInput) -> None:
     """
     Write the inference results to a file.
     """
-    from .llm import write_cif_files, write_entry_archive
+    from nomad_crystallm.actions.inference.utils import (
+        write_cif_files,
+        write_entry_archive,
+    )
 
     cif_paths = write_cif_files(data, logger=activity.logger)
     if not cif_paths:

@@ -21,15 +21,15 @@ from nomad.actions.manager import action_artifacts_dir, get_upload_files
 from nomad.datamodel import ServerContext
 from pymatgen.core import Composition
 
-from nomad_crystallm.actions.shared import (
+from nomad_crystallm.actions.inference.models import (
     InferenceInput,
     WriteResultsInput,
 )
-from nomad_crystallm.actions.utils import get_upload
 from nomad_crystallm.schemas.schema import (
     CrystaLLMInferenceResult,
     InferenceSettings,
 )
+from nomad_crystallm.utils import get_upload
 
 if TYPE_CHECKING:
     from logging import LoggerAdapter

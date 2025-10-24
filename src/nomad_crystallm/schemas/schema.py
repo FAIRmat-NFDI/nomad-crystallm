@@ -18,12 +18,12 @@ from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
 from pymatgen.core import Composition
 
-from nomad_crystallm.actions.shared import (
+from nomad_crystallm.actions.inference.models import (
     InferenceSettingsInput,
     InferenceUserInput,
     PromptConstructionInput,
 )
-from nomad_crystallm.schemas.utils import get_reference_from_mainfile
+from nomad_crystallm.utils import get_reference_from_mainfile
 
 SPACE_GROUPS = [Spacegroup(i).symbol for i in range(1, 231)]
 
@@ -429,7 +429,8 @@ class CrystaLLMInferenceForm(EntryData):
         input_data.model_validate(input_data.model_dump())
 
         action_instance_id = start_action(
-            action_id='nomad_crystallm.actions:crystallm_inference', data=input_data
+            action_id='nomad_crystallm.actions.inference:crystallm_inference',
+            data=input_data,
         )
 
         inference_status = InferenceStatus(action_instance_id=action_instance_id)

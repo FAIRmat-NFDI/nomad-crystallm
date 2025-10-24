@@ -4,13 +4,13 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
-    from nomad_crystallm.actions.activities import (
+    from nomad_crystallm.actions.inference.activities import (
         get_model,
         get_prompt,
         run_inference,
         write_results,
     )
-    from nomad_crystallm.actions.shared import (
+    from nomad_crystallm.actions.inference.models import (
         InferenceInput,
         InferenceUserInput,
         WriteResultsInput,
