@@ -1,100 +1,7 @@
-from __future__ import annotations
-
 from dataclasses import dataclass
 from typing import Literal
 
 from pydantic import BaseModel, Field
-
-
-class PromptConstructionInput(BaseModel):
-    composition: str = Field(
-        ..., description='Composition to use as a prompt for the model.'
-    )
-    num_formula_units_per_cell: NumFormulaUnitsPerCellLiteral = Field(
-        '1', description='Number of formula units per cell.'
-    )
-    space_group: SpaceGroupLiteral = Field(
-        '', description='Space group to use in the prompt.'
-    )
-
-
-class InferenceSettingsInput(BaseModel):
-    model: Literal['crystallm_v1_small', 'crystallm_v1_large'] = Field(
-        'crystallm_v1_small', description='Name of the model to use.'
-    )
-    num_samples: int = Field(
-        1, ge=1, le=5, description='Number of samples to generate.'
-    )
-    max_new_tokens: int = Field(
-        3000, ge=1, le=10000, description='Maximum number of tokens to generate.'
-    )
-    temperature: float = Field(
-        0.8, ge=0.0, le=1.0, description='Temperature for sampling.'
-    )
-    top_k: int = Field(10, ge=1, le=100, description='Top-k sampling.')
-    seed: int = Field(1337, ge=0, description='Random seed for reproducibility.')
-    dtype: Literal['bfloat16', 'float16', 'float32'] = Field(
-        'bfloat16', description='Data type for the model (based on PyTorch data types).'
-    )
-    compile: bool = Field(
-        False, description='Whether to compile the model for faster inference.'
-    )
-
-
-class InferenceUserInput(BaseModel):
-    upload_id: str = Field(..., description='ID of the NOMAD upload to save results.')
-    user_id: str = Field(..., description='ID of the user making the request.')
-    prompt_construction_inputs: list[PromptConstructionInput] = Field(
-        ...,
-        description='List of prompt construction inputs.',
-        title='Prompt Construction Inputs',
-    )
-    inference_settings: InferenceSettingsInput = Field(
-        ..., description='Inference settings for the model.', title='Inference Settings'
-    )
-
-
-@dataclass
-class InferenceInput:
-    """
-    Input data for model inference.
-
-    Attributes:
-
-    - prompts: List of prompts to use for the model.
-    - inference_settings: Settings for the model inference.
-    """
-
-    prompt: str
-    inference_settings: InferenceSettingsInput
-
-
-@dataclass
-class WriteResultsInput:
-    """
-    Input data for writing results as NOMAD entries.
-
-    Attributes:
-    - upload_id: If generate_cif, write the generate CIF files to the upload.
-    - user_id: User making the request
-    - action_instance_id: ID of the action instance; will be used to create a subfolder
-        under the raw folder of the upload.
-    - relative_cif_dir: Directory for the CIF files relative to the action instance dir.
-    - composition: Composition used for the prompt.
-    - prompt: Prompt used for the model.
-    - inference_settings: Settings for the model inference.
-    - generated_samples: Output from the model containing generated samples.
-    """
-
-    upload_id: str
-    user_id: str
-    action_instance_id: str
-    relative_cif_dir: str
-    composition: str
-    prompt: str
-    inference_settings: InferenceSettingsInput
-    generated_samples: list[str]
-
 
 SpaceGroupLiteral = Literal[
     '',
@@ -331,3 +238,93 @@ SpaceGroupLiteral = Literal[
 ]
 
 NumFormulaUnitsPerCellLiteral = Literal['1', '2', '3', '4', '6', '8']
+
+
+class PromptConstructionInput(BaseModel):
+    composition: str = Field(
+        ..., description='Composition to use as a prompt for the model.'
+    )
+    num_formula_units_per_cell: NumFormulaUnitsPerCellLiteral = Field(
+        '1', description='Number of formula units per cell.'
+    )
+    space_group: SpaceGroupLiteral = Field(
+        '', description='Space group to use in the prompt.'
+    )
+
+
+class InferenceSettingsInput(BaseModel):
+    model: Literal['crystallm_v1_small', 'crystallm_v1_large'] = Field(
+        'crystallm_v1_small', description='Name of the model to use.'
+    )
+    num_samples: int = Field(
+        1, ge=1, le=5, description='Number of samples to generate.'
+    )
+    max_new_tokens: int = Field(
+        3000, ge=1, le=10000, description='Maximum number of tokens to generate.'
+    )
+    temperature: float = Field(
+        0.8, ge=0.0, le=1.0, description='Temperature for sampling.'
+    )
+    top_k: int = Field(10, ge=1, le=100, description='Top-k sampling.')
+    seed: int = Field(1337, ge=0, description='Random seed for reproducibility.')
+    dtype: Literal['bfloat16', 'float16', 'float32'] = Field(
+        'bfloat16', description='Data type for the model (based on PyTorch data types).'
+    )
+    compile: bool = Field(
+        False, description='Whether to compile the model for faster inference.'
+    )
+
+
+class InferenceUserInput(BaseModel):
+    upload_id: str = Field(..., description='ID of the NOMAD upload to save results.')
+    user_id: str = Field(..., description='ID of the user making the request.')
+    prompt_construction_inputs: list[PromptConstructionInput] = Field(
+        ...,
+        description='List of prompt construction inputs.',
+        title='Prompt Construction Inputs',
+    )
+    inference_settings: InferenceSettingsInput = Field(
+        ..., description='Inference settings for the model.', title='Inference Settings'
+    )
+
+
+@dataclass
+class InferenceInput:
+    """
+    Input data for model inference.
+
+    Attributes:
+
+    - prompts: List of prompts to use for the model.
+    - inference_settings: Settings for the model inference.
+    """
+
+    prompt: str
+    inference_settings: InferenceSettingsInput
+
+
+@dataclass
+class WriteResultsInput:
+    """
+    Input data for writing results as NOMAD entries.
+
+    Attributes:
+    - upload_id: If generate_cif, write the generate CIF files to the upload.
+    - user_id: User making the request
+    - action_instance_id: ID of the action instance; will be used to create a subfolder
+        under the raw folder of the upload.
+    - relative_cif_dir: Directory for the CIF files relative to the action instance dir.
+    - composition: Composition used for the prompt.
+    - prompt: Prompt used for the model.
+    - inference_settings: Settings for the model inference.
+    - generated_samples: Output from the model containing generated samples.
+    """
+
+    upload_id: str
+    user_id: str
+    action_instance_id: str
+    relative_cif_dir: str
+    composition: str
+    prompt: str
+    inference_settings: InferenceSettingsInput
+    generated_samples: list[str]
