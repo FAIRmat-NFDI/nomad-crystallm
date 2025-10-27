@@ -1,3 +1,4 @@
+import asyncio
 from datetime import timedelta
 
 from temporalio import workflow
@@ -14,6 +15,7 @@ with workflow.unsafe.imports_passed_through():
         CrystallmUserInput,
         InferenceInput,
         InferenceOutput,
+        PromptConstructionInput,
         WriteResultsInput,
     )
 
@@ -37,6 +39,27 @@ class CrystallmWorkflow:
     @workflow.run
     async def run(self, data: CrystallmUserInput) -> None:
         retry_policy = RetryPolicy(maximum_attempts=3)
+
+        async def _get_prompt(
+            prompt_construction_input: PromptConstructionInput,
+        ) -> str:
+            return await workflow.execute_activity(
+                get_prompt,
+                prompt_construction_input,
+                start_to_close_timeout=timedelta(hours=1),
+                retry_policy=retry_policy,
+            )
+
+        async def _write_results(
+            write_results_input: WriteResultsInput,
+        ) -> None:
+            return await workflow.execute_activity(
+                write_results,
+                write_results_input,
+                start_to_close_timeout=timedelta(hours=1),
+                retry_policy=retry_policy,
+            )
+
         await workflow.execute_activity(
             get_model,
             data.inference_settings.model,
@@ -44,18 +67,19 @@ class CrystallmWorkflow:
             retry_policy=retry_policy,
         )
 
-        prompts = []  # list of all prompts along with as many duplicates as num_samples
-        for prompt_construction_input in data.prompt_construction_inputs:
-            prompt = await workflow.execute_activity(
-                get_prompt,
-                prompt_construction_input,
-                start_to_close_timeout=timedelta(hours=1),
-                retry_policy=retry_policy,
-            )
-            prompts.extend([prompt] * data.inference_settings.num_samples)
+        prompts = await asyncio.gather(
+            *[
+                _get_prompt(prompt_construction_input)
+                for prompt_construction_input in data.prompt_construction_inputs
+            ]
+        )
+        # list of all prompts along with as many duplicates as num_samples
+        duplicated_prompts = []
+        for prompt in prompts:
+            duplicated_prompts.extend([prompt] * data.inference_settings.num_samples)
 
-        num_batches = len(prompts) // data.inference_settings.batch_size
-        if len(prompts) % data.inference_settings.batch_size != 0:
+        num_batches = len(duplicated_prompts) // data.inference_settings.batch_size
+        if len(duplicated_prompts) % data.inference_settings.batch_size != 0:
             num_batches += 1
 
         generated_samples_all_batches = []
@@ -63,9 +87,10 @@ class CrystallmWorkflow:
             # create a child workflow for each batch
             range_start = batch_idx * data.inference_settings.batch_size
             range_end = min(
-                (batch_idx + 1) * data.inference_settings.batch_size, len(prompts)
+                (batch_idx + 1) * data.inference_settings.batch_size,
+                len(duplicated_prompts),
             )
-            batch_prompts = prompts[range_start:range_end]
+            batch_prompts = duplicated_prompts[range_start:range_end]
             inference_output = await workflow.execute_child_workflow(
                 InferenceWorkflow.run,
                 InferenceInput(
@@ -80,28 +105,27 @@ class CrystallmWorkflow:
             )
             generated_samples_all_batches.extend(inference_output.generated_samples)
 
-        for idx, prompt_construction_input in enumerate(
-            data.prompt_construction_inputs
-        ):
-            prompt = prompts[idx * data.inference_settings.num_samples]
-            generated_samples = generated_samples_all_batches[
-                idx * data.inference_settings.num_samples : (idx + 1)
-                * data.inference_settings.num_samples
+        await asyncio.gather(
+            *[
+                _write_results(
+                    WriteResultsInput(
+                        user_id=data.user_id,
+                        upload_id=data.upload_id,
+                        action_instance_id=workflow.info().workflow_id,
+                        relative_cif_dir=(
+                            f'composition_{idx + 1}_{prompt_construction_input.composition}'
+                        ),
+                        composition=prompt_construction_input.composition,
+                        prompt=prompts[idx],
+                        inference_settings=data.inference_settings,
+                        generated_samples=generated_samples_all_batches[
+                            idx * data.inference_settings.num_samples : (idx + 1)
+                            * data.inference_settings.num_samples
+                        ],
+                    )
+                )
+                for idx, prompt_construction_input in enumerate(
+                    data.prompt_construction_inputs,
+                )
             ]
-            await workflow.execute_activity(
-                write_results,
-                WriteResultsInput(
-                    user_id=data.user_id,
-                    upload_id=data.upload_id,
-                    action_instance_id=workflow.info().workflow_id,
-                    relative_cif_dir=(
-                        f'composition_{idx + 1}_{prompt_construction_input.composition}'
-                    ),
-                    composition=prompt_construction_input.composition,
-                    prompt=prompt,
-                    inference_settings=data.inference_settings,
-                    generated_samples=generated_samples,
-                ),
-                start_to_close_timeout=timedelta(hours=1),
-                retry_policy=retry_policy,
-            )
+        )
