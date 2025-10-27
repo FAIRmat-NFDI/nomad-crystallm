@@ -164,7 +164,6 @@ def evaluate_model(inference_input: InferenceInput) -> list[str]:
 
     tokenizer = CIFTokenizer()
     encode = tokenizer.encode
-    decode = tokenizer.decode
 
     model_path = os.path.join(
         action_artifacts_dir(),

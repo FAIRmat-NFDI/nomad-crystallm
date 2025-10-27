@@ -113,7 +113,8 @@ class CrystallmWorkflow:
                         upload_id=data.upload_id,
                         action_instance_id=workflow.info().workflow_id,
                         relative_cif_dir=(
-                            f'composition_{idx + 1}_{prompt_construction_input.composition}'
+                            'composition_'
+                            f'{idx + 1}_{prompt_construction_input.composition}'
                         ),
                         composition=prompt_construction_input.composition,
                         prompt=prompts[idx],
