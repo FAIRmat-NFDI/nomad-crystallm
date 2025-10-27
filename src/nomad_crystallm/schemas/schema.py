@@ -19,8 +19,8 @@ from nomad.normalizing.topology import add_system, add_system_info
 from pymatgen.core import Composition
 
 from nomad_crystallm.actions.inference.models import (
+    CrystallmUserInput,
     InferenceSettingsInput,
-    InferenceUserInput,
     PromptConstructionInput,
 )
 from nomad_crystallm.utils import get_reference_from_mainfile
@@ -88,6 +88,10 @@ class InferenceSettings(ArchiveSection):
     compile = Quantity(
         type=bool,
         description='Whether to compile the model for faster inference.',
+    )
+    batch_size = Quantity(
+        type=int,
+        description='Batch size for model inference.',
     )
 
 
@@ -242,6 +246,12 @@ class InferenceSettingsForm(ArchiveSection):
     compile.default = False
     compile.m_annotations['eln'] = ELNAnnotation(
         component=ELNComponentEnum.BoolEditQuantity,
+    )
+
+    batch_size = InferenceSettings.batch_size.m_copy(deep=True)
+    batch_size.default = 16
+    batch_size.m_annotations['eln'] = ELNAnnotation(
+        component=ELNComponentEnum.NumberEditQuantity,
     )
 
 
@@ -418,8 +428,9 @@ class CrystaLLMInferenceForm(EntryData):
             seed=self.inference_settings.seed,
             dtype=self.inference_settings.dtype,
             compile=self.inference_settings.compile,
+            batch_size=self.inference_settings.batch_size,
         )
-        input_data = InferenceUserInput(
+        input_data = CrystallmUserInput(
             user_id=archive.metadata.authors[0].user_id,
             upload_id=archive.metadata.upload_id,
             prompt_construction_inputs=prompt_construction_inputs,
