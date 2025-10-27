@@ -263,15 +263,20 @@ class InferenceSettingsInput(BaseModel):
         3000, ge=1, le=10000, description='Maximum number of tokens to generate.'
     )
     temperature: float = Field(
-        0.8, ge=0.0, le=1.0, description='Temperature for sampling.'
+        0.8, ge=0.0, le=1.0, description='Temperature for token sampling.'
     )
-    top_k: int = Field(10, ge=1, le=100, description='Top-k sampling.')
+    top_k: int = Field(
+        10,
+        ge=1,
+        le=100,
+        description='Number of top most probable tokens used for Top-k token sampling.',
+    )
     seed: int = Field(1337, ge=0, description='Random seed for reproducibility.')
     dtype: Literal['bfloat16', 'float16', 'float32'] = Field(
         'bfloat16', description='Data type for the model (based on PyTorch data types).'
     )
     compile: bool = Field(
-        False, description='Whether to compile the model for faster inference.'
+        False, description='Whether to compile the Torch model for faster inference.'
     )
     batch_size: int = Field(16, ge=1, description='Batch size for model inference.')
 

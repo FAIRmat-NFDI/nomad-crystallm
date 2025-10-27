@@ -8,15 +8,6 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 import torch
-from crystallm import (
-    GPT,
-    CIFTokenizer,
-    GPTConfig,
-    extract_space_group_symbol,
-    get_atomic_props_block_for_formula,
-    remove_atom_props_block,
-    replace_symmetry_operators,
-)
 from nomad.actions.manager import action_artifacts_dir, get_upload_files
 from nomad.datamodel import ServerContext
 from pymatgen.core import Composition
@@ -30,6 +21,22 @@ from nomad_crystallm.schemas.schema import (
     InferenceSettings,
 )
 from nomad_crystallm.utils import get_upload
+
+try:
+    from crystallm import (
+        GPT,
+        CIFTokenizer,
+        GPTConfig,
+        extract_space_group_symbol,
+        get_atomic_props_block_for_formula,
+        remove_atom_props_block,
+        replace_symmetry_operators,
+    )
+except ImportError as e:
+    raise ImportError(
+        'Unable to import the "crystallm" package, which is required for CrystaLLM '
+        'actions.'
+    ) from e
 
 if TYPE_CHECKING:
     from logging import LoggerAdapter
