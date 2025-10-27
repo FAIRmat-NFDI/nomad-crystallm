@@ -273,9 +273,10 @@ class InferenceSettingsInput(BaseModel):
     compile: bool = Field(
         False, description='Whether to compile the model for faster inference.'
     )
+    batch_size: int = Field(16, ge=1, description='Batch size for model inference.')
 
 
-class InferenceUserInput(BaseModel):
+class CrystallmUserInput(BaseModel):
     upload_id: str = Field(..., description='ID of the NOMAD upload to save results.')
     user_id: str = Field(..., description='ID of the user making the request.')
     prompt_construction_inputs: list[PromptConstructionInput] = Field(
@@ -299,8 +300,22 @@ class InferenceInput:
     - inference_settings: Settings for the model inference.
     """
 
-    prompt: str
+    user_id: str
+    upload_id: str
+    prompts: list[str]
     inference_settings: InferenceSettingsInput
+
+
+@dataclass
+class InferenceOutput:
+    """
+    Output data from model inference.
+
+    Attributes:
+    - generated_samples: List of generated samples from the model.
+    """
+
+    generated_samples: list[str]
 
 
 @dataclass
