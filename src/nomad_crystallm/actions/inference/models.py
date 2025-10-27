@@ -278,7 +278,9 @@ class InferenceSettingsInput(BaseModel):
     compile: bool = Field(
         False, description='Whether to compile the Torch model for faster inference.'
     )
-    batch_size: int = Field(16, ge=1, description='Batch size for model inference.')
+    batch_size: int = Field(
+        16, ge=1, le=32, description='Batch size for model inference.'
+    )
 
 
 class CrystallmUserInput(BaseModel):
