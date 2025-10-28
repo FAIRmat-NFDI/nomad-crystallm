@@ -8,15 +8,6 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 import torch
-from crystallm import (
-    GPT,
-    CIFTokenizer,
-    GPTConfig,
-    extract_space_group_symbol,
-    get_atomic_props_block_for_formula,
-    remove_atom_props_block,
-    replace_symmetry_operators,
-)
 from nomad.actions.manager import action_artifacts_dir, get_upload_files
 from nomad.datamodel import ServerContext
 from pymatgen.core import Composition
@@ -30,6 +21,22 @@ from nomad_crystallm.schemas.schema import (
     InferenceSettings,
 )
 from nomad_crystallm.utils import get_upload
+
+try:
+    from crystallm import (
+        GPT,
+        CIFTokenizer,
+        GPTConfig,
+        extract_space_group_symbol,
+        get_atomic_props_block_for_formula,
+        remove_atom_props_block,
+        replace_symmetry_operators,
+    )
+except ImportError as e:
+    raise ImportError(
+        'Unable to import the "crystallm" package, which is required for CrystaLLM '
+        'actions.'
+    ) from e
 
 if TYPE_CHECKING:
     from logging import LoggerAdapter
@@ -134,8 +141,8 @@ def evaluate_model(inference_input: InferenceInput) -> list[str]:
     - inference_input (InferenceInput): The input parameters for inference.
 
     Returns:
-    - list[str]: List of generated samples from the model. Number of samples
-        is determined by `inference_input.inference_settings.num_samples`.
+    - list[str]: List of generated samples from the model, with maximum length equal
+        to the `inference_input.inference_settings.batch_size`.
     """
     torch.manual_seed(inference_input.inference_settings.seed)
     torch.cuda.manual_seed(inference_input.inference_settings.seed)
@@ -157,7 +164,6 @@ def evaluate_model(inference_input: InferenceInput) -> list[str]:
 
     tokenizer = CIFTokenizer()
     encode = tokenizer.encode
-    decode = tokenizer.decode
 
     model_path = os.path.join(
         action_artifacts_dir(),
@@ -180,21 +186,20 @@ def evaluate_model(inference_input: InferenceInput) -> list[str]:
 
     # run generation
     # encode the beginning of the prompt
-    start_ids = encode(tokenizer.tokenize_cif(inference_input.prompt))
-    x = torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...]
-    generated_samples = []
+    start_ids = [
+        encode(tokenizer.tokenize_cif(prompt)) for prompt in inference_input.prompts
+    ]
+    x = torch.tensor(start_ids, dtype=torch.long, device=device)
     with torch.no_grad():
         with ctx:
-            for k in range(inference_input.inference_settings.num_samples):
-                y = model.generate(
-                    x,
-                    inference_input.inference_settings.max_new_tokens,
-                    temperature=inference_input.inference_settings.temperature,
-                    top_k=inference_input.inference_settings.top_k,
-                )
-                generated_samples.append(decode(y[0].tolist()))
+            y = model.generate(
+                x,
+                inference_input.inference_settings.max_new_tokens,
+                temperature=inference_input.inference_settings.temperature,
+                top_k=inference_input.inference_settings.top_k,
+            )
 
-    return generated_samples
+    return model.postprocess_generation(y)
 
 
 def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
