@@ -331,7 +331,8 @@ class CrystaLLMInferenceForm(Action, EntryData):
     )
     prompts_data_file = Quantity(
         type=str,
-        description='Path to a CSV file containing multiple prompt generation inputs. '
+        description='(Optional) '
+        'Path to a CSV file containing multiple prompt generation inputs. '
         'The first line should be the header containing the column names: composition, '
         'num_formula_units_per_cell, space_group. Each subsequent line should be '
         'formatted as: <composition>, <num_formula_units_per_cell>, <space_group>. '
