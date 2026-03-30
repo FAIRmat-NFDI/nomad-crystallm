@@ -4,8 +4,8 @@ import pandas as pd
 from ase.io import read
 from ase.spacegroup import Spacegroup
 from matid import SymmetryAnalyzer
-from nomad.actions.manager import get_action_status, start_action
-from nomad.datamodel.data import ArchiveSection, EntryData, EntryDataCategory
+from nomad.actions.manager import start_action
+from nomad.datamodel.data import ArchiveSection, EntryData
 from nomad.datamodel.metainfo.annotations import (
     BrowserAnnotation,
     ELNAnnotation,
@@ -16,7 +16,7 @@ from nomad.datamodel.results import Material, Results, SymmetryNew, System
 from nomad.metainfo import MEnum, Quantity, SchemaPackage, Section, SubSection
 from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
-from nomad_analysis.actions.schema import ActionCategory
+from nomad_analysis.actions.schema import ActionCategory, ActionStatus
 from pymatgen.core import Composition
 
 from nomad_crystallm.actions.inference.models import (
@@ -245,74 +245,58 @@ class InferenceSettingsForm(ArchiveSection):
     )
 
 
-class InferenceStatus(ArchiveSection):
+class InferenceStatus(ActionStatus):
     """Section to fetch the status of an inference action instance."""
 
     action_instance_id = Quantity(
         type=str,
         description='ID of the inference action instance.',
     )
-    status = Quantity(
-        type=str,
-        description='Status of the inference action instance.',
-    )
     generated_entries = Quantity(
         type=CrystaLLMInferenceResult,
         description='Reference to the generated entries after the action completes.',
         shape=['*'],
     )
-    trigger_get_action_status = Quantity(
-        type=bool,
-        default=False,
-        description='Retrieves the status of the inference action using action ID.',
-        a_eln=ELNAnnotation(
-            component=ELNComponentEnum.ActionEditQuantity,
-            label='Get Action Status',
-        ),
-    )
 
     def normalize(self, archive, logger=None):
-        """Normalize the section to ensure it is ready for processing."""
+        """
+        Fetches the action status when triggered or when the status is empty or RUNNING.
+        If the action status is COMPLETED, fetches the references for the generated
+        entries and populate `generated_entries`.
+        """
         super().normalize(archive, logger)
+
         if (
-            not self.status
-            or self.status == 'RUNNING'
+            not self.action_status
+            or self.action_status == 'RUNNING'
             or self.trigger_get_action_status
         ):
-            try:
-                status = get_action_status(
-                    self.action_instance_id, archive.metadata.authors[0].user_id
+            self.get_action_status(self.action_instance_id, archive, logger)
+
+        if self.action_status == 'COMPLETED':
+            action_dir_path = os.path.join(
+                archive.m_context.raw_path(), self.action_instance_id
+            )
+            rel_archive_paths = []
+            for root, _, files in os.walk(action_dir_path):
+                for file in files:
+                    if not file.endswith('.archive.json'):
+                        continue
+                    rel_archive_path = os.path.join(root, file).split('/raw/')[1]
+                    rel_archive_paths.append(rel_archive_path)
+            references = []
+            for archive_path in rel_archive_paths:
+                reference = get_reference_from_mainfile(
+                    archive.metadata.upload_id, archive_path
                 )
-                if status:
-                    self.status = status.name
-            except Exception as e:
-                logger.error(f'Error getting action status: {e}. ')
-            finally:
-                self.trigger_get_action_status = False
-            if self.status == 'COMPLETED':
-                action_dir_path = os.path.join(
-                    archive.m_context.raw_path(), self.action_instance_id
-                )
-                rel_archive_paths = []
-                for root, _, files in os.walk(action_dir_path):
-                    for file in files:
-                        if not file.endswith('.archive.json'):
-                            continue
-                        rel_archive_path = os.path.join(root, file).split('/raw/')[1]
-                        rel_archive_paths.append(rel_archive_path)
-                references = []
-                for archive_path in rel_archive_paths:
-                    reference = get_reference_from_mainfile(
-                        archive.metadata.upload_id, archive_path
+                if not reference:
+                    logger.error(
+                        'Unable to set reference for the generated entry for '
+                        f'action {self.action_instance_id}.'
                     )
-                    if not reference:
-                        logger.error(
-                            'Unable to set reference for the generated entry for '
-                            f'action {self.action_instance_id}.'
-                        )
-                    else:
-                        references.append(reference)
-                self.generated_entries = references
+                else:
+                    references.append(reference)
+            self.generated_entries = references
 
 
 class PromptInput(ArchiveSection):
