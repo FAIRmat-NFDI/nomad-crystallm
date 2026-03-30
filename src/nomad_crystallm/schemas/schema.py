@@ -16,7 +16,7 @@ from nomad.datamodel.results import Material, Results, SymmetryNew, System
 from nomad.metainfo import MEnum, Quantity, SchemaPackage, Section, SubSection
 from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
-from nomad_analysis.actions.schema import ActionCategory, ActionStatus
+from nomad_analysis.actions.schema import Action, ActionStatus
 from pymatgen.core import Composition
 
 from nomad_crystallm.actions.inference.models import (
@@ -322,12 +322,11 @@ class PromptInput(ArchiveSection):
     )
 
 
-class CrystaLLMInferenceForm(EntryData):
+class CrystaLLMInferenceForm(Action, EntryData):
     """Inference form for running CrystaLLM inference actions."""
 
     m_def = Section(
         label='CrystaLLM Inference Form',
-        categories=[ActionCategory],
         description='Form to run CrystaLLM inference actions from the ELN interface.',
     )
     prompts_data_file = Quantity(
@@ -339,14 +338,6 @@ class CrystaLLMInferenceForm(EntryData):
         'The composition field is required, while the other two are optional.',
         a_eln=ELNAnnotation(component=ELNComponentEnum.FileEditQuantity),
         a_browser=BrowserAnnotation(adaptor='RawFileAdaptor'),
-    )
-    trigger_run_action = Quantity(
-        type=bool,
-        description='Triggers the action defined under `run_action` method.',
-        a_eln=ELNAnnotation(
-            component=ELNComponentEnum.ActionEditQuantity,
-            label='Run Inference Action',
-        ),
     )
     prompt_inputs = SubSection(
         section_def=PromptInput,
@@ -364,19 +355,13 @@ class CrystaLLMInferenceForm(EntryData):
         repeats=True,
     )
 
-    def run_action(self, archive, logger):
-        """
-        Run the CrystaLLM inference action with the provided archive.
-        Uses the first author's credentials to run the action.
-        """
+    def start_action(self, archive, logger) -> str:
         if not self.prompt_inputs:
             logger.warn(
                 'No prompt inputs provided for the CrystaLLM inference action. '
                 'Cannot run the action.'
             )
             return
-        if not self.inference_settings:
-            self.inference_settings = InferenceSettingsForm()
         prompt_construction_inputs = []
         for prompt in self.prompt_inputs:
             try:
@@ -424,6 +409,8 @@ class CrystaLLMInferenceForm(EntryData):
             self.triggered_inferences = [inference_status]
         else:
             self.triggered_inferences.append(inference_status)
+
+        return action_instance_id
 
     def read_prompt_inputs_from_file(self, archive, logger) -> list[PromptInput]:
         """
@@ -491,8 +478,8 @@ class CrystaLLMInferenceForm(EntryData):
     def normalize(self, archive, logger):
         """
         Sets a default for inference_settings if not provided, reads the prompt inputs
-        from a CSV file if specified, filters out duplicate prompts, and triggers the
-        action when trigger_run_action is True.
+        from a CSV file if specified, filters out duplicate prompts, and runs
+        super normalization for handling the trigger buttons.
         """
         self.m_setdefault('inference_settings')
         if prompt_inputs_from_file := self.read_prompt_inputs_from_file(
@@ -500,10 +487,4 @@ class CrystaLLMInferenceForm(EntryData):
         ):
             self.prompt_inputs.extend(prompt_inputs_from_file)
         self.filter_prompts()
-        if self.trigger_run_action:
-            try:
-                self.run_action(archive, logger)
-            except Exception as e:
-                logger.error(f'Error running action: {e}. ')
-            self.trigger_run_action = False
         super().normalize(archive, logger)
