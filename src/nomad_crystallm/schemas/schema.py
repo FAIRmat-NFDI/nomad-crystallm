@@ -13,9 +13,10 @@ from nomad.datamodel.metainfo.annotations import (
     SectionProperties,
 )
 from nomad.datamodel.results import Material, Results, SymmetryNew, System
-from nomad.metainfo import Category, MEnum, Quantity, SchemaPackage, Section, SubSection
+from nomad.metainfo import MEnum, Quantity, SchemaPackage, Section, SubSection
 from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
+from nomad_analysis.actions.schema import ActionCategory
 from pymatgen.core import Composition
 
 from nomad_crystallm.actions.inference.models import (
@@ -28,17 +29,6 @@ from nomad_crystallm.utils import get_reference_from_mainfile
 SPACE_GROUPS = [Spacegroup(i).symbol for i in range(1, 231)]
 
 m_package = SchemaPackage()
-
-
-class ActionCategory(EntryDataCategory):
-    """
-    Category for schemas that can be used to run NOMAD Actions from ELN interface.
-    """
-
-    m_def = Category(
-        label='Run NOMAD Actions from ELN',
-        categories=[EntryDataCategory],
-    )
 
 
 class InferenceSettings(ArchiveSection):
