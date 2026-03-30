@@ -14,7 +14,7 @@ classifiers = [
 ]
 name = "nomad-crystallm"
 description = "A NOMAD plugin for running CrystaLLM inference in NOMAD installations."
-version = "0.1.0"
+dynamic = ["version"]
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
@@ -29,6 +29,7 @@ license = { file = "LICENSE" }
 dependencies = [
     "nomad-lab[infrastructure]",
     # nomad.orchestrator module depends on infrastructure deps
+    "nomad-analysis>=0.2.2",
     "python-magic-bin; sys_platform == 'win32'",
     "nomad-schema-plugin-run>=1.0.1",
     "nomad-schema-plugin-simulation-workflow>=1.0.9",
@@ -128,3 +129,5 @@ crystallm_schemas = "nomad_crystallm.schemas:crystallm_schemas"
 [tool.cruft]
 # Avoid updating workflow files, this leads to permissions issues
 skip = [".github/*"]
+
+[tool.setuptools_scm]

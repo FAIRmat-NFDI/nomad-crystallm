@@ -4,18 +4,20 @@ import pandas as pd
 from ase.io import read
 from ase.spacegroup import Spacegroup
 from matid import SymmetryAnalyzer
-from nomad.actions.manager import get_action_status, start_action
-from nomad.datamodel.data import ArchiveSection, EntryData, EntryDataCategory
+from nomad.actions.manager import start_action
+from nomad.datamodel.data import ArchiveSection, EntryData
 from nomad.datamodel.metainfo.annotations import (
     BrowserAnnotation,
     ELNAnnotation,
     ELNComponentEnum,
+    SectionDisplayAnnotation,
     SectionProperties,
 )
 from nomad.datamodel.results import Material, Results, SymmetryNew, System
-from nomad.metainfo import Category, MEnum, Quantity, SchemaPackage, Section, SubSection
+from nomad.metainfo import MEnum, Quantity, SchemaPackage, Section, SubSection
 from nomad.normalizing.common import nomad_atoms_from_ase_atoms
 from nomad.normalizing.topology import add_system, add_system_info
+from nomad_analysis.actions.schema import Action, ActionStatus
 from pymatgen.core import Composition
 
 from nomad_crystallm.actions.inference.models import (
@@ -28,17 +30,6 @@ from nomad_crystallm.utils import get_reference_from_mainfile
 SPACE_GROUPS = [Spacegroup(i).symbol for i in range(1, 231)]
 
 m_package = SchemaPackage()
-
-
-class ActionCategory(EntryDataCategory):
-    """
-    Category for schemas that can be used to run NOMAD Actions from ELN interface.
-    """
-
-    m_def = Category(
-        label='Run NOMAD Actions from ELN',
-        categories=[EntryDataCategory],
-    )
 
 
 class InferenceSettings(ArchiveSection):
@@ -255,74 +246,58 @@ class InferenceSettingsForm(ArchiveSection):
     )
 
 
-class InferenceStatus(ArchiveSection):
+class InferenceStatus(ActionStatus):
     """Section to fetch the status of an inference action instance."""
 
     action_instance_id = Quantity(
         type=str,
         description='ID of the inference action instance.',
     )
-    status = Quantity(
-        type=str,
-        description='Status of the inference action instance.',
-    )
     generated_entries = Quantity(
         type=CrystaLLMInferenceResult,
         description='Reference to the generated entries after the action completes.',
         shape=['*'],
     )
-    trigger_get_action_status = Quantity(
-        type=bool,
-        default=False,
-        description='Retrieves the status of the inference action using action ID.',
-        a_eln=ELNAnnotation(
-            component=ELNComponentEnum.ActionEditQuantity,
-            label='Get Action Status',
-        ),
-    )
 
     def normalize(self, archive, logger=None):
-        """Normalize the section to ensure it is ready for processing."""
+        """
+        Fetches the action status when triggered or when the status is empty or RUNNING.
+        If the action status is COMPLETED, fetches the references for the generated
+        entries and populate `generated_entries`.
+        """
         super().normalize(archive, logger)
+
         if (
-            not self.status
-            or self.status == 'RUNNING'
+            not self.action_status
+            or self.action_status == 'RUNNING'
             or self.trigger_get_action_status
         ):
-            try:
-                status = get_action_status(
-                    self.action_instance_id, archive.metadata.authors[0].user_id
+            self.get_action_status(self.action_instance_id, archive, logger)
+
+        if self.action_status == 'COMPLETED':
+            action_dir_path = os.path.join(
+                archive.m_context.raw_path(), self.action_instance_id
+            )
+            rel_archive_paths = []
+            for root, _, files in os.walk(action_dir_path):
+                for file in files:
+                    if not file.endswith('.archive.json'):
+                        continue
+                    rel_archive_path = os.path.join(root, file).split('/raw/')[1]
+                    rel_archive_paths.append(rel_archive_path)
+            references = []
+            for archive_path in rel_archive_paths:
+                reference = get_reference_from_mainfile(
+                    archive.metadata.upload_id, archive_path
                 )
-                if status:
-                    self.status = status.name
-            except Exception as e:
-                logger.error(f'Error getting action status: {e}. ')
-            finally:
-                self.trigger_get_action_status = False
-            if self.status == 'COMPLETED':
-                action_dir_path = os.path.join(
-                    archive.m_context.raw_path(), self.action_instance_id
-                )
-                rel_archive_paths = []
-                for root, _, files in os.walk(action_dir_path):
-                    for file in files:
-                        if not file.endswith('.archive.json'):
-                            continue
-                        rel_archive_path = os.path.join(root, file).split('/raw/')[1]
-                        rel_archive_paths.append(rel_archive_path)
-                references = []
-                for archive_path in rel_archive_paths:
-                    reference = get_reference_from_mainfile(
-                        archive.metadata.upload_id, archive_path
+                if not reference:
+                    logger.error(
+                        'Unable to set reference for the generated entry for '
+                        f'action {self.action_instance_id}.'
                     )
-                    if not reference:
-                        logger.error(
-                            'Unable to set reference for the generated entry for '
-                            f'action {self.action_instance_id}.'
-                        )
-                    else:
-                        references.append(reference)
-                self.generated_entries = references
+                else:
+                    references.append(reference)
+            self.generated_entries = references
 
 
 class PromptInput(ArchiveSection):
@@ -348,31 +323,32 @@ class PromptInput(ArchiveSection):
     )
 
 
-class CrystaLLMInferenceForm(EntryData):
+class CrystaLLMInferenceForm(Action, EntryData):
     """Inference form for running CrystaLLM inference actions."""
 
     m_def = Section(
         label='CrystaLLM Inference Form',
-        categories=[ActionCategory],
         description='Form to run CrystaLLM inference actions from the ELN interface.',
+        a_display=SectionDisplayAnnotation(
+            order=[
+                'trigger_start_action',
+                'action_instance_id',
+                'action_status',
+                'trigger_get_action_status',
+                'trigger_stop_action',
+            ]
+        ),
     )
     prompts_data_file = Quantity(
         type=str,
-        description='Path to a CSV file containing multiple prompt generation inputs. '
+        description='(Optional) '
+        'Path to a CSV file containing multiple prompt generation inputs. '
         'The first line should be the header containing the column names: composition, '
         'num_formula_units_per_cell, space_group. Each subsequent line should be '
         'formatted as: <composition>, <num_formula_units_per_cell>, <space_group>. '
         'The composition field is required, while the other two are optional.',
         a_eln=ELNAnnotation(component=ELNComponentEnum.FileEditQuantity),
         a_browser=BrowserAnnotation(adaptor='RawFileAdaptor'),
-    )
-    trigger_run_action = Quantity(
-        type=bool,
-        description='Triggers the action defined under `run_action` method.',
-        a_eln=ELNAnnotation(
-            component=ELNComponentEnum.ActionEditQuantity,
-            label='Run Inference Action',
-        ),
     )
     prompt_inputs = SubSection(
         section_def=PromptInput,
@@ -390,19 +366,13 @@ class CrystaLLMInferenceForm(EntryData):
         repeats=True,
     )
 
-    def run_action(self, archive, logger):
-        """
-        Run the CrystaLLM inference action with the provided archive.
-        Uses the first author's credentials to run the action.
-        """
+    def start_action(self, archive, logger) -> str:
         if not self.prompt_inputs:
             logger.warn(
                 'No prompt inputs provided for the CrystaLLM inference action. '
                 'Cannot run the action.'
             )
             return
-        if not self.inference_settings:
-            self.inference_settings = InferenceSettingsForm()
         prompt_construction_inputs = []
         for prompt in self.prompt_inputs:
             try:
@@ -450,6 +420,8 @@ class CrystaLLMInferenceForm(EntryData):
             self.triggered_inferences = [inference_status]
         else:
             self.triggered_inferences.append(inference_status)
+
+        return action_instance_id
 
     def read_prompt_inputs_from_file(self, archive, logger) -> list[PromptInput]:
         """
@@ -517,8 +489,8 @@ class CrystaLLMInferenceForm(EntryData):
     def normalize(self, archive, logger):
         """
         Sets a default for inference_settings if not provided, reads the prompt inputs
-        from a CSV file if specified, filters out duplicate prompts, and triggers the
-        action when trigger_run_action is True.
+        from a CSV file if specified, filters out duplicate prompts, and runs
+        super normalization for handling the trigger buttons.
         """
         self.m_setdefault('inference_settings')
         if prompt_inputs_from_file := self.read_prompt_inputs_from_file(
@@ -526,10 +498,4 @@ class CrystaLLMInferenceForm(EntryData):
         ):
             self.prompt_inputs.extend(prompt_inputs_from_file)
         self.filter_prompts()
-        if self.trigger_run_action:
-            try:
-                self.run_action(archive, logger)
-            except Exception as e:
-                logger.error(f'Error running action: {e}. ')
-            self.trigger_run_action = False
         super().normalize(archive, logger)
