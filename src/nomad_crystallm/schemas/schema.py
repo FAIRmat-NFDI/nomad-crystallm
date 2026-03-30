@@ -10,6 +10,7 @@ from nomad.datamodel.metainfo.annotations import (
     BrowserAnnotation,
     ELNAnnotation,
     ELNComponentEnum,
+    SectionDisplayAnnotation,
     SectionProperties,
 )
 from nomad.datamodel.results import Material, Results, SymmetryNew, System
@@ -328,6 +329,15 @@ class CrystaLLMInferenceForm(Action, EntryData):
     m_def = Section(
         label='CrystaLLM Inference Form',
         description='Form to run CrystaLLM inference actions from the ELN interface.',
+        a_display=SectionDisplayAnnotation(
+            order=[
+                'trigger_start_action',
+                'action_instance_id',
+                'action_status',
+                'trigger_get_action_status',
+                'trigger_stop_action',
+            ]
+        ),
     )
     prompts_data_file = Quantity(
         type=str,
