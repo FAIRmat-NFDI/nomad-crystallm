@@ -29,7 +29,7 @@ license = { file = "LICENSE" }
 dependencies = [
     "nomad-lab[infrastructure]",
     # nomad.orchestrator module depends on infrastructure deps
-    "nomad-analysis>=0.2.1",
+    "nomad-analysis>=0.2.2",
     "python-magic-bin; sys_platform == 'win32'",
     "nomad-schema-plugin-run>=1.0.1",
     "nomad-schema-plugin-simulation-workflow>=1.0.9",
