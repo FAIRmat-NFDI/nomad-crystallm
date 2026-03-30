@@ -5,6 +5,8 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
+    from nomad.utils import get_logger
+
     from nomad_crystallm.actions.inference.activities import (
         get_model,
         get_prompt,
@@ -18,6 +20,8 @@ with workflow.unsafe.imports_passed_through():
         PromptConstructionInput,
         WriteResultsInput,
     )
+
+logger = get_logger('nomad_crystallm.actions.inference.workflow')
 
 
 @workflow.defn
@@ -91,6 +95,10 @@ class CrystallmWorkflow:
                 len(duplicated_prompts),
             )
             batch_prompts = duplicated_prompts[range_start:range_end]
+            logger.info(
+                f'Starting inference for batch {batch_idx + 1}/{num_batches} with '
+                f'{len(batch_prompts)} prompts...'
+            )
             inference_output = await workflow.execute_child_workflow(
                 InferenceWorkflow.run,
                 InferenceInput(
@@ -102,6 +110,10 @@ class CrystallmWorkflow:
                 id=f'{workflow.info().workflow_id}_inference_batch_{batch_idx}',
                 parent_close_policy=workflow.ParentClosePolicy.TERMINATE,
                 retry_policy=RetryPolicy(maximum_attempts=1),
+            )
+            logger.info(
+                f'Completed inference for batch {batch_idx + 1}/{num_batches}. '
+                f'Generated {len(inference_output.generated_samples)} samples.'
             )
             generated_samples_all_batches.extend(inference_output.generated_samples)
 

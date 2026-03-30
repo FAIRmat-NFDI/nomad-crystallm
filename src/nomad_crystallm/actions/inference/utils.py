@@ -4,12 +4,12 @@ import shutil
 import tarfile
 import tempfile
 from contextlib import nullcontext
-from typing import TYPE_CHECKING
 
 import aiohttp
 import torch
 from nomad.actions.manager import action_artifacts_dir, get_upload_files
 from nomad.datamodel import ServerContext
+from nomad.utils import get_logger
 from pymatgen.core import Composition
 
 from nomad_crystallm.actions.inference.models import (
@@ -38,8 +38,9 @@ except ImportError as e:
         'actions.'
     ) from e
 
-if TYPE_CHECKING:
-    from logging import LoggerAdapter
+
+logger = get_logger('nomad_crystallm.actions.inference.utils')
+
 BLOCK_SIZE = 1024
 
 model_data = {
@@ -70,9 +71,11 @@ async def download_model(model: str) -> None:
     # Check if file exists asynchronously
     exists = await asyncio.to_thread(os.path.exists, model_path)
     if not exists and not model_url:
-        raise FileNotFoundError(
+        msg = (
             f'Model file "{model_path}" does not exist and `model_url` is not provided.'
         )
+        logger.error(msg)
+        raise FileNotFoundError(msg + ' Cannot download model without a URL.')
 
     if exists:
         return
@@ -95,10 +98,12 @@ async def download_model(model: str) -> None:
         # Check if '.pt' file exists in the extracted directory
         model_files = [f for f in os.listdir(tmp_zipdir) if f.endswith('.pt')]
         if not model_files:
-            raise FileNotFoundError(
+            msg = (
                 'No ".pt" file found in the extracted directory '
                 f'"{os.path.dirname(model_path)}".'
             )
+            logger.error(msg)
+            raise FileNotFoundError(msg)
         # Move over the first .pt file found to the model_path
         os.makedirs(os.path.dirname(model_path), exist_ok=True)
         shutil.move(os.path.join(tmp_zipdir, model_files[0]), model_path)
@@ -202,7 +207,7 @@ def evaluate_model(inference_input: InferenceInput) -> list[str]:
     return model.postprocess_generation(y)
 
 
-def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
+def postprocess(cif: str, fname: str) -> str:
     """
     Post-process the CIF file to ensure it is in a valid format.
     """
@@ -224,7 +229,7 @@ def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
     return cif
 
 
-def write_cif_files(result: WriteResultsInput, logger: 'LoggerAdapter') -> list[str]:
+def write_cif_files(result: WriteResultsInput) -> list[str]:
     """
     Write the generated CIFs under 'raw/<action_instance_id>/<relative_cif_dir>'.
     """
@@ -239,7 +244,7 @@ def write_cif_files(result: WriteResultsInput, logger: 'LoggerAdapter') -> list[
         for idx, sample in enumerate(result.generated_samples):
             fname = f'{result.composition}_{idx + 1}.cif'
             tmp_fpath = os.path.join(tmpdir, fname)
-            processed_sample = postprocess(sample, tmp_fpath, logger)
+            processed_sample = postprocess(sample, tmp_fpath)
             with open(tmp_fpath, 'w', encoding='utf-8') as f:
                 f.write(processed_sample)
             cif_dir = os.path.join(result.action_instance_id, result.relative_cif_dir)
