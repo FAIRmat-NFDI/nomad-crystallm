@@ -1,4 +1,4 @@
-from nomad.utils import get_logger
+from nomad.utils.structlogging import get_logger
 from temporalio import activity
 
 from nomad_crystallm.actions.inference.models import (

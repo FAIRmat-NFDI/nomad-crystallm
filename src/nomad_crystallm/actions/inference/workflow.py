@@ -5,7 +5,7 @@ from temporalio import workflow
 from temporalio.common import RetryPolicy
 
 with workflow.unsafe.imports_passed_through():
-    from nomad.utils import get_logger
+    from nomad.utils.structlogging import get_logger
 
     from nomad_crystallm.actions.inference.activities import (
         get_model,

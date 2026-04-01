@@ -9,7 +9,7 @@ import aiohttp
 import torch
 from nomad.actions.manager import action_artifacts_dir, get_upload_files
 from nomad.datamodel import ServerContext
-from nomad.utils import get_logger
+from nomad.utils.structlogging import get_logger
 from pymatgen.core import Composition
 
 from nomad_crystallm.actions.inference.models import (
