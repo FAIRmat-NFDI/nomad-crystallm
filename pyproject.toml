@@ -124,6 +124,7 @@ where = ["src"]
 [project.entry-points.'nomad.plugin']
 crystallm_inference = "nomad_crystallm.actions.inference:crystallm_inference"
 crystallm_schemas = "nomad_crystallm.schemas:crystallm_schemas"
+hitl_test = "nomad_crystallm.actions.hitl:myaction"
 
 [tool.cruft]
 # Avoid updating workflow files, this leads to permissions issues
