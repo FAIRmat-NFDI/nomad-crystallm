@@ -10,6 +10,7 @@ class MyActionEntryPoint(ActionEntryPoint):
         from nomad.actions import Action
 
         from nomad_crystallm.actions.hitl.activities import (
+            collect_signal_asset_metadata_activity,
             generate_random_number_activity,
         )
         from nomad_crystallm.actions.hitl.workflows import (
@@ -20,7 +21,10 @@ class MyActionEntryPoint(ActionEntryPoint):
             task_queue=self.task_queue,
             workflow=UserInputExampleWorkflow,
             child_workflows=[],
-            activities=[generate_random_number_activity],
+            activities=[
+                generate_random_number_activity,
+                collect_signal_asset_metadata_activity,
+            ],
         )
 
 

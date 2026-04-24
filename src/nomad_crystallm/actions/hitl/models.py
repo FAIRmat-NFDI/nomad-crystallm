@@ -2,6 +2,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from nomad.actions.assets.models import ActionAssetRef
+
 
 class BaseWorkflowInput(BaseModel):
     """Base input model for workflows"""
@@ -29,3 +31,19 @@ class UserInputData(BaseModel):
         ..., description="The user's decision (e.g. 'approve', 'disapprove')"
     )
     notes: str = Field(default='', description='Optional notes provided by the user.')
+    image_path: ActionAssetRef = Field(
+        ...,
+        description='Image file reference uploaded with the signal submission.',
+        json_schema_extra={
+            'x-nomad-widget': 'image-upload',
+            'accept': ['image/*'],
+        },
+    )
+    audio_submission: ActionAssetRef = Field(
+        ...,
+        description='Audio file reference uploaded with the signal submission.',
+        json_schema_extra={
+            'x-nomad-widget': 'audio-upload',
+            'accept': ['audio/*'],
+        },
+    )

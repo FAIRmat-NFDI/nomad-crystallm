@@ -8,6 +8,7 @@ with workflow.unsafe.imports_passed_through():
     )
 
     from nomad_crystallm.actions.hitl.activities import (
+        collect_signal_asset_metadata_activity,
         generate_random_number_activity,
     )
     from nomad_crystallm.actions.hitl.models import (
@@ -53,8 +54,18 @@ class UserInputExampleWorkflow:
         decision_str = (
             'approved' if self._user_input.decision.lower() == 'approve' else 'rejected'
         )
+        file_metadata = await workflow.execute_activity(
+            collect_signal_asset_metadata_activity,
+            args=[
+                workflow.info().workflow_id,
+                self._user_input.image_path,
+                self._user_input.audio_submission,
+            ],
+            start_to_close_timeout=timedelta(seconds=10),
+        )
         return {
             'status': 'success',
             'message': f'user {decision_str} {random_number}',
             'user_notes': self._user_input.notes,
+            'submitted_file_metadata': file_metadata,
         }
