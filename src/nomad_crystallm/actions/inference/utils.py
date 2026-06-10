@@ -58,11 +58,18 @@ model_data = {
 }
 
 
-async def download_model(model: str) -> None:
+async def download_model(model: str) -> None:  # noqa: PLR0915
     """
     Checks if the model file exists locally, and if not, downloads it from the
     provided URL.
     """
+    from nomad_crystallm.actions.inference.stream_models import (
+        ActionStreamEvent,
+        ActionStreamEventSeverity,
+        ActionStreamEventType,
+        action_event_publisher,
+    )
+
     model_path = os.path.join(action_artifacts_dir(), model_data[model]['model_path'])
 
     model_url = model_data[model]['model_url']
@@ -75,33 +82,121 @@ async def download_model(model: str) -> None:
         )
 
     if exists:
+        try:
+            async with action_event_publisher() as stream:
+                stream.publish(
+                    ActionStreamEvent(
+                        type=ActionStreamEventType.MESSAGE,
+                        name='download_model',
+                        message='Model check: model file already exists locally.',
+                        severity=ActionStreamEventSeverity.SUCCESS,
+                    )
+                )
+        except Exception:
+            pass
         return
 
-    # Download the model from the URL and copy the model file to the model_path
-    with tempfile.TemporaryDirectory() as tmpdir:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(model_url) as response:
-                response.raise_for_status()
-                # Download in chunks
-                tmp_zipfile = os.path.join(tmpdir, model_url.split('/')[-1])
-                loop = asyncio.get_running_loop()
-                with open(tmp_zipfile, 'wb') as f:
-                    async for chunk in response.content.iter_chunked(BLOCK_SIZE):
-                        await loop.run_in_executor(None, f.write, chunk)
-        # Unpack the model zip
-        with tarfile.open(tmp_zipfile, 'r:gz') as tar:
-            tar.extractall(tmpdir)
-        tmp_zipdir = tmp_zipfile.split('.')[0]
-        # Check if '.pt' file exists in the extracted directory
-        model_files = [f for f in os.listdir(tmp_zipdir) if f.endswith('.pt')]
-        if not model_files:
-            raise FileNotFoundError(
-                'No ".pt" file found in the extracted directory '
-                f'"{os.path.dirname(model_path)}".'
+    try:
+        # Download the model from the URL and copy the model file to the model_path
+        async with action_event_publisher() as stream:
+            stream.publish(
+                ActionStreamEvent(
+                    type=ActionStreamEventType.MESSAGE,
+                    name='download_model',
+                    operation_id='download_model',
+                    message='Downloading model...',
+                    progress=0.0,
+                    severity=ActionStreamEventSeverity.INFO,
+                )
             )
-        # Move over the first .pt file found to the model_path
-        os.makedirs(os.path.dirname(model_path), exist_ok=True)
-        shutil.move(os.path.join(tmp_zipdir, model_files[0]), model_path)
+
+            with tempfile.TemporaryDirectory() as tmpdir:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(model_url) as response:
+                        response.raise_for_status()
+                        # Download in chunks
+                        tmp_zipfile = os.path.join(tmpdir, model_url.split('/')[-1])
+                        content_length = response.content_length or 0
+                        downloaded_bytes = 0
+                        last_reported_progress = 0.0
+                        PROGRESS_STEP = 2.0
+                        TOTAL_PROGRESS = 100.0
+
+                        loop = asyncio.get_running_loop()
+                        with open(tmp_zipfile, 'wb') as f:
+                            chunks = response.content.iter_chunked(BLOCK_SIZE)
+                            async for chunk in chunks:
+                                await loop.run_in_executor(None, f.write, chunk)
+                                downloaded_bytes += len(chunk)
+                                if content_length > 0:
+                                    progress = (downloaded_bytes / content_length) * 100
+                                    # Limit updates to every 2% to avoid
+                                    # overloading the stream
+                                    if (
+                                        progress - last_reported_progress
+                                        >= PROGRESS_STEP
+                                        or progress >= TOTAL_PROGRESS
+                                    ):
+                                        last_reported_progress = progress
+                                        stream.publish(
+                                            ActionStreamEvent(
+                                                type=ActionStreamEventType.MESSAGE,
+                                                name='download_model',
+                                                operation_id='download_model',
+                                                message=(
+                                                    'Downloading model... '
+                                                    f'{progress:.1f}%'
+                                                ),
+                                                progress=progress,
+                                                severity=ActionStreamEventSeverity.INFO,
+                                            )
+                                        )
+
+                # Unpack the model zip
+                stream.publish(
+                    ActionStreamEvent(
+                        type=ActionStreamEventType.MESSAGE,
+                        name='download_model',
+                        message='Extracting model checkpoint...',
+                        severity=ActionStreamEventSeverity.INFO,
+                    )
+                )
+                with tarfile.open(tmp_zipfile, 'r:gz') as tar:
+                    await asyncio.to_thread(tar.extractall, tmpdir)
+                tmp_zipdir = tmp_zipfile.split('.')[0]
+                # Check if '.pt' file exists in the extracted directory
+                model_files = [f for f in os.listdir(tmp_zipdir) if f.endswith('.pt')]
+                if not model_files:
+                    raise FileNotFoundError(
+                        'No ".pt" file found in the extracted directory '
+                        f'"{os.path.dirname(model_path)}".'
+                    )
+                # Move over the first .pt file found to the model_path
+                os.makedirs(os.path.dirname(model_path), exist_ok=True)
+                shutil.move(os.path.join(tmp_zipdir, model_files[0]), model_path)
+
+            stream.publish(
+                ActionStreamEvent(
+                    type=ActionStreamEventType.MESSAGE,
+                    name='download_model',
+                    message='Model downloaded and extracted successfully.',
+                    severity=ActionStreamEventSeverity.SUCCESS,
+                )
+            )
+    except Exception as exc:
+        try:
+            async with action_event_publisher() as stream:
+                stream.publish(
+                    ActionStreamEvent(
+                        type=ActionStreamEventType.MESSAGE,
+                        name='download_model',
+                        message=f'Model download failed: {exc}',
+                        severity=ActionStreamEventSeverity.ERROR,
+                    )
+                )
+        except Exception:
+            pass
+        raise
 
 
 def construct_prompt(
