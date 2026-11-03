@@ -1,10 +1,26 @@
+from nomad.actions.assets import ActionAssetRef, open_action_asset
 from temporalio import activity
+from temporalio.exceptions import ApplicationError
 
 from nomad_crystallm.actions.inference.models import (
     InferenceInput,
     PromptConstructionInput,
     WriteResultsInput,
 )
+
+
+@activity.defn
+def read_prompts(data: ActionAssetRef) -> list[PromptConstructionInput]:
+    from nomad_crystallm.actions.inference.prompt_files import read_prompt_inputs
+
+    try:
+        with open_action_asset(data, activity.info().workflow_id) as file:
+            return read_prompt_inputs(file, data.filename, activity.logger)
+    except Exception as error:
+        raise ApplicationError(
+            f'Unable to read prompts file "{data.filename}": {error}',
+            non_retryable=True,
+        ) from error
 
 
 @activity.defn

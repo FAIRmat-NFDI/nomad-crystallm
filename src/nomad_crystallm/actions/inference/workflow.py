@@ -3,11 +3,13 @@ from datetime import timedelta
 
 from temporalio import workflow
 from temporalio.common import RetryPolicy
+from temporalio.exceptions import ApplicationError
 
 with workflow.unsafe.imports_passed_through():
     from nomad_crystallm.actions.inference.activities import (
         get_model,
         get_prompt,
+        read_prompts,
         run_inference,
         write_results,
     )
@@ -40,6 +42,23 @@ class CrystallmWorkflow:
     async def run(self, data: CrystallmUserInput) -> None:
         retry_policy = RetryPolicy(maximum_attempts=3)
 
+        prompt_construction_inputs = list(data.prompt_construction_inputs)
+        if data.prompts_file is not None:
+            prompt_construction_inputs.extend(
+                await workflow.execute_activity(
+                    read_prompts,
+                    data.prompts_file,
+                    start_to_close_timeout=timedelta(minutes=5),
+                    retry_policy=retry_policy,
+                )
+            )
+        if not prompt_construction_inputs:
+            raise ApplicationError(
+                'No valid prompts were provided. Add manual prompts or upload a '
+                'CSV or XLSX file containing valid prompt rows.',
+                non_retryable=True,
+            )
+
         async def _get_prompt(
             prompt_construction_input: PromptConstructionInput,
         ) -> str:
@@ -70,7 +89,7 @@ class CrystallmWorkflow:
         prompts = await asyncio.gather(
             *[
                 _get_prompt(prompt_construction_input)
-                for prompt_construction_input in data.prompt_construction_inputs
+                for prompt_construction_input in prompt_construction_inputs
             ]
         )
         # list of all prompts along with as many duplicates as num_samples
@@ -129,7 +148,7 @@ class CrystallmWorkflow:
                     )
                 )
                 for idx, prompt_construction_input in enumerate(
-                    data.prompt_construction_inputs,
+                    prompt_construction_inputs,
                 )
             ]
         )
