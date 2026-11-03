@@ -47,6 +47,7 @@ cpu-action = [
 ]
 dev = [
     "nomad-lab[infrastructure]>=2.0.0",
+    "nomad-crystallm[cpu-action]",
     "ruff",
     "pytest",
 ]
