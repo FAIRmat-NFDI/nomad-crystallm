@@ -230,6 +230,7 @@ def write_cif_files(result: WriteResultsInput, logger: 'LoggerAdapter') -> list[
     Write the generated CIFs under 'raw/<action_instance_id>/<relative_cif_dir>'.
     """
     upload_files = get_upload_files(result.upload_id, result.user_id)
+    assert isinstance(upload_files, StagingUploadFiles)
     if not upload_files:
         raise ValueError(
             f'No upload files found for upload_id "{result.upload_id}" '
