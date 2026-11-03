@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from nomad.actions.assets.models import ActionAssetRef
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 SpaceGroupLiteral = Literal[
     '',
@@ -285,6 +285,18 @@ class InferenceSettingsInput(BaseModel):
 
 
 class CrystallmUserInput(BaseModel):
+    model_config = ConfigDict(
+        title='',
+        json_schema_extra={
+            'description': (
+                'Enter compositions manually or upload a CSV/XLSX prompt table. '
+                'See [Using the action form]('
+                'https://fairmat-nfdi.github.io/nomad-crystallm/how_to/use_this_plugin.html'
+                ') for help with prompts, inference settings, and results.'
+            ),
+            'uiSchema': {'ui:enableMarkdownInDescription': True},
+        },
+    )
     upload_id: str = Field(..., description='ID of the NOMAD upload to save results.')
     user_id: str = Field(..., description='ID of the user making the request.')
     prompts_file: ActionAssetRef | None = Field(
