@@ -345,6 +345,7 @@ class WriteResultsInput:
     upload_id: str
     user_id: str
     action_instance_id: str
+    exportable_dir_name: str
     relative_cif_dir: str
     composition: str
     prompt: str

@@ -112,6 +112,9 @@ class CrystallmWorkflow:
                         user_id=data.user_id,
                         upload_id=data.upload_id,
                         action_instance_id=workflow.info().workflow_id,
+                        exportable_dir_name=(
+                            f'crystallm_inference_{workflow.info().start_time.isoformat()}'
+                        ),
                         relative_cif_dir=(
                             'composition_'
                             f'{idx + 1}_{prompt_construction_input.composition}'

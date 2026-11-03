@@ -227,7 +227,7 @@ def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
 
 def write_cif_files(result: WriteResultsInput, logger: 'LoggerAdapter') -> list[str]:
     """
-    Write the generated CIFs under 'raw/<action_instance_id>/<relative_cif_dir>'.
+    Write the generated CIFs under 'raw/<exportable_dir_name>/<relative_cif_dir>'.
     """
     upload_files = get_upload_files(result.upload_id, result.user_id)
     assert isinstance(upload_files, StagingUploadFiles)
@@ -244,7 +244,7 @@ def write_cif_files(result: WriteResultsInput, logger: 'LoggerAdapter') -> list[
             processed_sample = postprocess(sample, tmp_fpath, logger)
             with open(tmp_fpath, 'w', encoding='utf-8') as f:
                 f.write(processed_sample)
-            cif_dir = os.path.join(result.action_instance_id, result.relative_cif_dir)
+            cif_dir = os.path.join(result.exportable_dir_name, result.relative_cif_dir)
             upload_files.add_rawfiles(tmp_fpath, target_dir=cif_dir)
             cif_paths.append(os.path.join(cif_dir, fname))
     return cif_paths
@@ -253,7 +253,7 @@ def write_cif_files(result: WriteResultsInput, logger: 'LoggerAdapter') -> list[
 def write_entry_archive(cif_paths, result: WriteResultsInput) -> str:
     """
     Create an entry for the inference results under
-    'raw/<action_instance_id>/<relative_cif_dir>'.
+    'raw/<exportable_dir_name>/<relative_cif_dir>'.
     """
     inference_result = CrystaLLMInferenceResult(
         prompt=result.prompt,
@@ -271,7 +271,7 @@ def write_entry_archive(cif_paths, result: WriteResultsInput) -> str:
         ),
     )
     rel_mainfile_path = os.path.join(
-        result.action_instance_id,
+        result.exportable_dir_name,
         result.relative_cif_dir,
         f'crystallm_{result.composition}.archive.json',
     )
