@@ -6,15 +6,17 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Nomad example template">
+        <meta name="description" content="Generate crystal structures with the CrystaLLM action form in NOMAD.">
       
       
         <meta name="author" content="Ahmed Ilyas">
       
       
+        <link rel="canonical" href="https://fairmat-nfdi.github.io/nomad-crystallm/index.html">
       
       
-        <link rel="next" href="tutorial/tutorial.html">
+      
+        <link rel="next" href="how_to/install_this_plugin.html">
       
       
         
@@ -76,7 +78,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#welcome-to-the-nomad-crystallm-documentation" class="md-skip">
+        <a href="#crystallm-for-nomad" class="md-skip">
           Skip to content
         </a>
       
@@ -90,7 +92,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="header.title">
-    <a href="https://nomad-lab.eu" title="nomad-crystallm" class="md-header__button md-logo" aria-label="nomad-crystallm" data-md-component="logo">
+    <a href="https://fairmat-nfdi.github.io/nomad-crystallm/" title="nomad-crystallm" class="md-header__button md-logo" aria-label="nomad-crystallm" data-md-component="logo">
       
   <img src="assets/nomad-plugin-logo.png" alt="logo">
 
@@ -155,7 +157,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="https://nomad-lab.eu" title="nomad-crystallm" class="md-nav__button md-logo" aria-label="nomad-crystallm" data-md-component="logo">
+    <a href="https://fairmat-nfdi.github.io/nomad-crystallm/" title="nomad-crystallm" class="md-nav__button md-logo" aria-label="nomad-crystallm" data-md-component="logo">
       
   <img src="assets/nomad-plugin-logo.png" alt="logo">
 
@@ -244,63 +246,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#introduction" class="md-nav__link">
+  <a href="#start-here" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Introduction
+        Start here
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Introduction">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#tutorial" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tutorial
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#how-to-guides" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How-to guides
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#explanation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Explanation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -319,80 +271,6 @@
   
   
     <li class="md-nav__item">
-      <a href="tutorial/tutorial.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tutorial
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    How-to guides
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    How-to guides
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="how_to/install_this_plugin.html" class="md-nav__link">
         
   
@@ -400,7 +278,7 @@
   <span class="md-ellipsis">
     
   
-    Install this Plugin
+    Installation
   
 
     
@@ -412,10 +290,9 @@
     </li>
   
 
-              
-            
-              
-                
+    
+      
+      
   
   
   
@@ -428,7 +305,7 @@
   <span class="md-ellipsis">
     
   
-    Use this Plugin
+    Using the action form
   
 
     
@@ -440,10 +317,9 @@
     </li>
   
 
-              
-            
-              
-                
+    
+      
+      
   
   
   
@@ -456,97 +332,7 @@
   <span class="md-ellipsis">
     
   
-    Contribute to this plugin
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="how_to/contribute_to_the_documentation.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Contribute to the documentation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="explanation/explanation.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Explanation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="reference/references.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Reference
+    Contributing
   
 
     
@@ -586,63 +372,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#introduction" class="md-nav__link">
+  <a href="#start-here" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Introduction
+        Start here
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Introduction">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#tutorial" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Tutorial
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#how-to-guides" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How-to guides
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#explanation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Explanation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -663,41 +399,18 @@
 
 
 
-<h1 id="welcome-to-the-nomad-crystallm-documentation">Welcome to the <code>nomad-crystallm</code> documentation<a class="headerlink" href="#welcome-to-the-nomad-crystallm-documentation" title="Permanent link">&para;</a></h1>
-<p>nomad example template</p>
-<h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Attention</p>
-<p>TODO</p>
-</div>
-<div class="home-grid">
-<div>
-<h3 id="tutorial">Tutorial<a class="headerlink" href="#tutorial" title="Permanent link">&para;</a></h3>
-<p>TODO</p>
+<h1 id="crystallm-for-nomad">CrystaLLM for NOMAD<a class="headerlink" href="#crystallm-for-nomad" title="Permanent link">&para;</a></h1>
+<p>Generate candidate crystal structures from chemical compositions and save the
+CIF files and result entries in your NOMAD project.</p>
+<p><strong>Use <a href="https://nomad-lab.eu/oasis">CrystaLLM on NOMAD Oasis</a>.</strong></p>
+<h2 id="start-here">Start here<a class="headerlink" href="#start-here" title="Permanent link">&para;</a></h2>
+<p>Follow <a href="how_to/use_this_plugin.html">Using the action form</a> to enter a composition,
+choose inference settings, and run the action. The same guide covers multiple
+prompts, CSV/XLSX tables, and downloading results.</p>
 <ul>
-<li><a href="tutorial/tutorial.html">Tutorial</a></li>
+<li><a href="how_to/install_this_plugin.html">Installation and Oasis setup</a> is for administrators adding the plugin to a deployment.</li>
+<li><a href="how_to/contribute_to_this_plugin.html">Contributing</a> covers local development, tests, and documentation previews.</li>
 </ul>
-</div>
-<div>
-<h3 id="how-to-guides">How-to guides<a class="headerlink" href="#how-to-guides" title="Permanent link">&para;</a></h3>
-<p>How-to guides provide step-by-step instructions for a wide range of tasks, with the overarching topics:</p>
-<ul>
-<li><a href="how_to/install_this_plugin.html">Install this plugin</a></li>
-<li><a href="how_to/use_this_plugin.html">Use this plugin</a></li>
-<li><a href="how_to/contribute_to_this_plugin.html">Contribute to this plugin</a></li>
-<li><a href="how_to/contribute_to_the_documentation.html">Contribute to the documentation</a></li>
-</ul>
-</div>
-<div>
-<h3 id="explanation">Explanation<a class="headerlink" href="#explanation" title="Permanent link">&para;</a></h3>
-<p>The explanation <a href="explanation/explanation.html">section</a> provides background knowledge on this plugin.</p>
-</div>
-<div>
-<h3 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">&para;</a></h3>
-<p>The reference <a href="reference/references.html">section</a> includes all CLI commands and arguments, all configuration options,
-the possible schema annotations and their arguments, and a glossary of used terms.</p>
-</div>
-</div>
 
 
 

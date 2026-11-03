@@ -1,3 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+         <loc>https://fairmat-nfdi.github.io/nomad-crystallm/index.html</loc>
+         <lastmod>2026-11-03</lastmod>
+    </url>
+    <url>
+         <loc>https://fairmat-nfdi.github.io/nomad-crystallm/how_to/contribute_to_this_plugin.html</loc>
+         <lastmod>2026-11-03</lastmod>
+    </url>
+    <url>
+         <loc>https://fairmat-nfdi.github.io/nomad-crystallm/how_to/install_this_plugin.html</loc>
+         <lastmod>2026-11-03</lastmod>
+    </url>
+    <url>
+         <loc>https://fairmat-nfdi.github.io/nomad-crystallm/how_to/use_this_plugin.html</loc>
+         <lastmod>2026-11-03</lastmod>
+    </url>
 </urlset>

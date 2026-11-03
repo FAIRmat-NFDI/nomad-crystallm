@@ -6,14 +6,16 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Nomad example template">
+        <meta name="description" content="Generate crystal structures with the CrystaLLM action form in NOMAD.">
       
       
         <meta name="author" content="Ahmed Ilyas">
       
       
+        <link rel="canonical" href="https://fairmat-nfdi.github.io/nomad-crystallm/how_to/install_this_plugin.html">
       
-        <link rel="prev" href="../tutorial/tutorial.html">
+      
+        <link rel="prev" href="../index.html">
       
       
         <link rel="next" href="use_this_plugin.html">
@@ -27,7 +29,7 @@
     
     
       
-        <title>Install this Plugin - nomad-crystallm</title>
+        <title>Installation - nomad-crystallm</title>
       
     
     
@@ -78,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#install-this-plugin" class="md-skip">
+        <a href="#install-and-configure-the-plugin" class="md-skip">
           Skip to content
         </a>
       
@@ -92,7 +94,7 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="header.title">
-    <a href="https://nomad-lab.eu" title="nomad-crystallm" class="md-header__button md-logo" aria-label="nomad-crystallm" data-md-component="logo">
+    <a href="https://fairmat-nfdi.github.io/nomad-crystallm/" title="nomad-crystallm" class="md-header__button md-logo" aria-label="nomad-crystallm" data-md-component="logo">
       
   <img src="../assets/nomad-plugin-logo.png" alt="logo">
 
@@ -110,7 +112,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Install this Plugin
+              Installation
             
           </span>
         </div>
@@ -157,7 +159,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="https://nomad-lab.eu" title="nomad-crystallm" class="md-nav__button md-logo" aria-label="nomad-crystallm" data-md-component="logo">
+    <a href="https://fairmat-nfdi.github.io/nomad-crystallm/" title="nomad-crystallm" class="md-nav__button md-logo" aria-label="nomad-crystallm" data-md-component="logo">
       
   <img src="../assets/nomad-plugin-logo.png" alt="logo">
 
@@ -210,82 +212,6 @@
       
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../tutorial/tutorial.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Tutorial
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-    
-  
-  
-  
-    
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    How-to guides
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    How-to guides
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
     
   
   
@@ -298,6 +224,24 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="install_this_plugin.html" class="md-nav__link md-nav__link--active">
         
   
@@ -305,7 +249,7 @@
   <span class="md-ellipsis">
     
   
-    Install this Plugin
+    Installation
   
 
     
@@ -315,13 +259,81 @@
 
       </a>
       
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-this-plugin-to-nomad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding this plugin to NOMAD
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Adding this plugin to NOMAD">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-this-plugin-in-your-nomad-oasis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding this plugin in your NOMAD Oasis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-this-plugin-in-your-local-nomad-installation-and-the-source-code-of-nomad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding this plugin in your local NOMAD installation and the source code of NOMAD
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
-              
-            
-              
-                
+    
+      
+      
   
   
   
@@ -334,7 +346,7 @@
   <span class="md-ellipsis">
     
   
-    Use this Plugin
+    Using the action form
   
 
     
@@ -346,10 +358,9 @@
     </li>
   
 
-              
-            
-              
-                
+    
+      
+      
   
   
   
@@ -362,97 +373,7 @@
   <span class="md-ellipsis">
     
   
-    Contribute to this plugin
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="contribute_to_the_documentation.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Contribute to the documentation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../explanation/explanation.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Explanation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../reference/references.html" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Reference
+    Contributing
   
 
     
@@ -485,6 +406,64 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-this-plugin-to-nomad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding this plugin to NOMAD
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Adding this plugin to NOMAD">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#adding-this-plugin-in-your-nomad-oasis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding this plugin in your NOMAD Oasis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-this-plugin-in-your-local-nomad-installation-and-the-source-code-of-nomad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adding this plugin in your local NOMAD installation and the source code of NOMAD
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -500,11 +479,91 @@
 
 
 
-<h1 id="install-this-plugin">Install This Plugin<a class="headerlink" href="#install-this-plugin" title="Permanent link">&para;</a></h1>
-<div class="admonition note">
-<p class="admonition-title">Attention</p>
-<p>TODO</p>
-</div>
+<h1 id="install-and-configure-the-plugin">Install and configure the plugin<a class="headerlink" href="#install-and-configure-the-plugin" title="Permanent link">&para;</a></h1>
+<p>This page is for Oasis administrators and local installations. If CrystaLLM
+is already available on your deployment, follow <a href="use_this_plugin.html">Using the action form</a>.</p>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<p>Use the Python environment or custom container image of your NOMAD deployment.
+The package requires <code>nomad-lab&gt;=2.0.0</code> and a NOMAD UI with action forms. Use a
+Python version supported by your NOMAD installation.</p>
+<p>Install the plugin with its inference dependencies:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s1">'nomad-crystallm[cpu-action]'</span>
+</code></pre></div>
+<p>For an installation using the repository version of the plugin:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s1">'nomad-crystallm[cpu-action] @ git+https://github.com/FAIRmat-NFDI/nomad-crystallm.git'</span>
+</code></pre></div>
+<p>Use the same plugin version in the API and action-worker environments. Installing
+<code>nomad-crystallm</code> without the <code>cpu-action</code> extra provides the schema dependencies
+but does not install everything needed to run inference.</p>
+<p>Installing the Python package alone does not start an Oasis or an inference
+worker. Complete the setup below before running an action.</p>
+<h2 id="adding-this-plugin-to-nomad">Adding this plugin to NOMAD<a class="headerlink" href="#adding-this-plugin-to-nomad" title="Permanent link">&para;</a></h2>
+<p>Choose the subsection matching your installation:</p>
+<ol>
+<li><a href="#adding-this-plugin-in-your-nomad-oasis">An existing NOMAD Oasis</a>.</li>
+<li><a href="#adding-this-plugin-in-your-local-nomad-installation-and-the-source-code-of-nomad">A local NOMAD installation</a>.</li>
+</ol>
+<h3 id="adding-this-plugin-in-your-nomad-oasis">Adding this plugin in your NOMAD Oasis<a class="headerlink" href="#adding-this-plugin-in-your-nomad-oasis" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Add <code>nomad-crystallm[cpu-action]</code> to your deployment's package requirements or
+   custom NOMAD image. Rebuild and redeploy the services that use that image;
+   installing into a running container alone will not survive its replacement.</li>
+<li>Make sure your deployment runs Temporal and that NOMAD can connect to it.
+   Merge the following into <code>nomad.yaml</code>, using your deployment's Temporal host
+   and namespace:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">temporal</span><span class="p">:</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">temporal</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">7233</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default</span>
+</code></pre></div>
+<p>Here, <code>temporal</code> is an example container service name. For a native local
+   installation, the host may be <code>localhost</code>.</p>
+<ol>
+<li>Run a NOMAD CPU action worker with the plugin installed, the same NOMAD
+   configuration as the API, and access to the deployment's upload and action
+   storage:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>nomad<span class="w"> </span>admin<span class="w"> </span>run<span class="w"> </span>action-cpu-worker
+</code></pre></div>
+<p>For a container deployment, run this as a worker service using the configured
+   NOMAD image and storage mounts. The action uses the CPU task queue; PyTorch
+   uses CUDA when it is available to that worker and otherwise runs on CPU.</p>
+<ol>
+<li>Give the worker access to download the model from Zenodo on its first run.
+   Keep its action-artifact storage persistent so later runs can reuse the
+   downloaded model.</li>
+<li>Restart the API and CPU action worker after installing or updating the plugin.
+   Sign in to the UI and check that <strong>CrystaLLM Inference</strong> appears under
+   <strong>Run action</strong>. If your deployment restricts plugin entry points, allow
+   <code>nomad_crystallm.actions.inference:crystallm_inference</code> and
+   <code>nomad_crystallm.schemas:crystallm_schemas</code>.</li>
+</ol>
+<p>For deployments with prompt-table upload support, also merge the following into
+<code>nomad.yaml</code>. This preserves the default Action Assets file types and adds CSV
+and XLSX; retain any additional types your deployment already allows.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">actions</span><span class="p">:</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">action_assets</span><span class="p">:</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">allowed_media_types</span><span class="p">:</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">audio/*</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">image/*</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/pdf</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/json</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text/plain</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/octet-stream</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">text/csv</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">application/vnd.openxmlformats-officedocument.spreadsheetml.sheet</span>
+</code></pre></div>
+<p>Restart the API and worker after changing the configuration. See the
+<a href="https://docs.nomad-lab.eu/howto/oasis/configure.html#plugins">NOMAD Oasis plugin configuration documentation</a>
+for deployment-specific plugin setup.</p>
+<h3 id="adding-this-plugin-in-your-local-nomad-installation-and-the-source-code-of-nomad">Adding this plugin in your local NOMAD installation and the source code of NOMAD<a class="headerlink" href="#adding-this-plugin-in-your-local-nomad-installation-and-the-source-code-of-nomad" title="Permanent link">&para;</a></h3>
+<p>Install the package in the environment used by your local NOMAD API and CPU
+action worker, then apply the Temporal and storage setup above.</p>
+<p>For development across NOMAD and the plugin, use
+<a href="https://github.com/FAIRmat-NFDI/nomad-distro-dev"><code>nomad-distro-dev</code></a> and follow
+its README for workspace setup and service commands.</p>
 
 
 
