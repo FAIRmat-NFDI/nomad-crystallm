@@ -33,14 +33,14 @@ worker. Complete the setup below before running an action.
 Choose the subsection matching your installation:
 
 1. [An existing NOMAD Oasis](#adding-this-plugin-in-your-nomad-oasis).
-2. [A local NOMAD installation](#adding-this-plugin-in-your-local-nomad-installation-and-the-source-code-of-nomad).
+1. [A local NOMAD installation](#adding-this-plugin-in-your-local-nomad-installation-and-the-source-code-of-nomad).
 
 ### Adding this plugin in your NOMAD Oasis
 
 1. Add `nomad-crystallm[cpu-action]` to your deployment's package requirements or
    custom NOMAD image. Rebuild and redeploy the services that use that image;
    installing into a running container alone will not survive its replacement.
-2. Make sure your deployment runs Temporal and that NOMAD can connect to it.
+1. Make sure your deployment runs Temporal and that NOMAD can connect to it.
    Merge the following into `nomad.yaml`, using your deployment's Temporal host
    and namespace:
 
@@ -55,7 +55,7 @@ Choose the subsection matching your installation:
    Here, `temporal` is an example container service name. For a native local
    installation, the host may be `localhost`.
 
-3. Run a NOMAD CPU action worker with the plugin installed, the same NOMAD
+1. Run a NOMAD CPU action worker with the plugin installed, the same NOMAD
    configuration as the API, and access to the deployment's upload and action
    storage:
 
@@ -67,10 +67,10 @@ Choose the subsection matching your installation:
    NOMAD image and storage mounts. The action uses the CPU task queue; PyTorch
    uses CUDA when it is available to that worker and otherwise runs on CPU.
 
-4. Give the worker access to download the model from Zenodo on its first run.
+1. Give the worker access to download the model from Zenodo on its first run.
    Keep its action-artifact storage persistent so later runs can reuse the
    downloaded model.
-5. Restart the API and CPU action worker after installing or updating the plugin.
+1. Restart the API and CPU action worker after installing or updating the plugin.
    Sign in to the UI and check that **CrystaLLM Inference** appears under
    **Run action**. If your deployment restricts plugin entry points, allow
    `nomad_crystallm.actions.inference:crystallm_inference` and

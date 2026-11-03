@@ -6,11 +6,11 @@ Open [NOMAD Oasis](https://nomad-lab.eu/oasis) and sign in to run
 ## Start with one composition
 
 1. Open or create an unpublished project where you have permission to add files.
-2. Choose **Run action** from the project, then select **CrystaLLM Inference**.
+1. Choose **Run action** from the project, then select **CrystaLLM Inference**.
    You can also start from **Run action** on the **NOMAD Actions** page.
-3. Check **Upload Id**. It is pre-filled when you open the form from a project;
+1. Check **Upload Id**. It is pre-filled when you open the form from a project;
    otherwise enter the destination project's upload ID.
-4. Under **Prompt Construction Inputs**, add an item:
+1. Under **Prompt Construction Inputs**, add an item:
 
    | Field                      | Example     | Meaning                                                                              |
    | -------------------------- | ----------- | ------------------------------------------------------------------------------------ |
@@ -18,9 +18,9 @@ Open [NOMAD Oasis](https://nomad-lab.eu/oasis) and sign in to run
    | Num Formula Units Per Cell | `1`         | Number of reduced formula units in the cell; choose `1`, `2`, `3`, `4`, `6`, or `8`. |
    | Space Group                | Leave empty | Optionally constrain generation to a space group from the list.                      |
 
-5. Under **Inference Settings**, keep `crystallm_v1_small` and one sample for a
+1. Under **Inference Settings**, keep `crystallm_v1_small` and one sample for a
    first run. The settings are explained below.
-6. Choose **Run**, then follow **View action** in the confirmation message.
+1. Choose **Run**, then follow **View action** in the confirmation message.
    You can return to the run through **Action History** on the **NOMAD Actions** page.
 
 The first run can take longer while the worker downloads the model. Follow the
