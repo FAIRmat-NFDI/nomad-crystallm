@@ -327,52 +327,35 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#development" class="md-nav__link">
+  <a href="#set-up-development" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Development
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Development">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#developing-on-nomad-distro-dev" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Developing on nomad-distro-dev
+        Set up development
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#run-the-tests" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#run-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Run the tests
+        Run tests
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#run-linting-and-auto-formatting" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#check-code-and-documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Run linting and auto-formatting
+        Check code and documentation
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -381,45 +364,6 @@
     <span class="md-ellipsis">
       
         Preview documentation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Preview documentation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#debugging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Debugging
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#template-update" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Template update
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#main-contributors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Main contributors
       
     </span>
   </a>
@@ -461,52 +405,35 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#development" class="md-nav__link">
+  <a href="#set-up-development" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Development
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Development">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#developing-on-nomad-distro-dev" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Developing on nomad-distro-dev
+        Set up development
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#run-the-tests" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#run-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Run the tests
+        Run tests
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#run-linting-and-auto-formatting" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#check-code-and-documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Run linting and auto-formatting
+        Check code and documentation
       
     </span>
   </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -515,45 +442,6 @@
     <span class="md-ellipsis">
       
         Preview documentation
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Preview documentation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#debugging" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Debugging
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#template-update" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Template update
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#main-contributors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Main contributors
       
     </span>
   </a>
@@ -577,109 +465,41 @@
 
 
 
-<h1 id="contribute-to-this-plugin">Contribute to this plugin<a class="headerlink" href="#contribute-to-this-plugin" title="Permanent link">&para;</a></h1>
-<p>For everyday use, see <a href="use_this_plugin.html">Using the action form</a>. Deployment
-administrators can follow <a href="install_this_plugin.html">Installation</a>.</p>
-<h2 id="development">Development<a class="headerlink" href="#development" title="Permanent link">&para;</a></h2>
-<p>For contributing to the plugin, clone the repository and install its development
-dependencies:</p>
+<h1 id="contribute-to-this-plugin">Contribute to This Plugin<a class="headerlink" href="#contribute-to-this-plugin" title="Permanent link">&para;</a></h1>
+<h2 id="set-up-development">Set up development<a class="headerlink" href="#set-up-development" title="Permanent link">&para;</a></h2>
+<p>We recommend using <a href="https://docs.astral.sh/uv/">uv</a> to manage Python environments and dependencies, with Python 3.10 or newer. Clone the repository and install the development dependencies:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/FAIRmat-NFDI/nomad-crystallm.git
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>nomad-crystallm
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>python<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>uv<span class="w"> </span>sync<span class="w"> </span>--python<span class="w"> </span><span class="m">3</span>.12<span class="w"> </span>--extra<span class="w"> </span>dev
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>.<span class="w"> </span>.venv/bin/activate
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>pip
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>uv
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">'.[dev]'</span>
 </code></pre></div>
-<h3 id="developing-on-nomad-distro-dev">Developing on <code>nomad-distro-dev</code><a class="headerlink" href="#developing-on-nomad-distro-dev" title="Permanent link">&para;</a></h3>
-<p>Use the dedicated
-<a href="https://github.com/FAIRmat-NFDI/nomad-distro-dev"><code>nomad-distro-dev</code></a> workspace
-when developing against local NOMAD packages. Add the plugin to its root
-dependencies with the <code>cpu-action</code> extra:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="c1"># Other workspace dependencies...</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="s2">"nomad-crystallm[cpu-action]"</span><span class="p">,</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">]</span>
+<p>Run the commands below from the plugin repository root.</p>
+<h2 id="run-tests">Run tests<a class="headerlink" href="#run-tests" title="Permanent link">&para;</a></h2>
+<p>Run the full test suite:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/
 </code></pre></div>
-<p>Follow the workspace README to configure its infrastructure, including Temporal.
-Use compatible NOMAD and UI revisions with action-form support. From the workspace
-root, run its setup task:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uv<span class="w"> </span>run<span class="w"> </span>poe<span class="w"> </span>setup
+<p>To run a subset, pass a test file:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_inference_generation.py
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>uv<span class="w"> </span>run<span class="w"> </span>pytest<span class="w"> </span>tests/test_prompt_files.py
 </code></pre></div>
-<p>Then start these services in separate terminals. Run the API and CPU action
-worker commands from the workspace root:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uv<span class="w"> </span>run<span class="w"> </span>poe<span class="w"> </span>start
+<p>Use <code>-k EXPRESSION</code> to select tests by name and <code>-v</code> for verbose output.</p>
+<h2 id="check-code-and-documentation">Check code and documentation<a class="headerlink" href="#check-code-and-documentation" title="Permanent link">&para;</a></h2>
+<p>Run linting and formatting checks with Ruff:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>check<span class="w"> </span>.
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>uv<span class="w"> </span>run<span class="w"> </span>ruff<span class="w"> </span>format<span class="w"> </span>.<span class="w"> </span>--check
 </code></pre></div>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>uv<span class="w"> </span>run<span class="w"> </span>poe<span class="w"> </span>cpuworker
-</code></pre></div>
-<p>Start the UI with action forms from the workspace's <code>ui</code> directory:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nb">cd</span><span class="w"> </span>ui
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>npm<span class="w"> </span>install
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>npm<span class="w"> </span>start
-</code></pre></div>
-<h3 id="run-the-tests">Run the tests<a class="headerlink" href="#run-the-tests" title="Permanent link">&para;</a></h3>
-<p>From the plugin directory:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-sv<span class="w"> </span>tests
-</code></pre></div>
-<p>To generate a coverage report:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>pytest-cov
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>--cov<span class="o">=</span>src<span class="w"> </span>tests
-</code></pre></div>
-<h3 id="run-linting-and-auto-formatting">Run linting and auto-formatting<a class="headerlink" href="#run-linting-and-auto-formatting" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>ruff<span class="w"> </span>check<span class="w"> </span>.
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>ruff<span class="w"> </span>format<span class="w"> </span>.<span class="w"> </span>--check
-</code></pre></div>
-<p>Run <code>ruff format .</code> to apply formatting changes.</p>
+<p>To apply automatic formatting, run <code>uv run ruff format .</code>.</p>
 <p>Markdown linting requires Node.js 22 or newer and npm/npx:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>uv<span class="w"> </span>run<span class="w"> </span>poe<span class="w"> </span>markdown-lint
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>uv<span class="w"> </span>run<span class="w"> </span>poe<span class="w"> </span>markdown-lint
 </code></pre></div>
 <p>Add <code>--fix</code> to apply automatic Markdown fixes: <code>uv run poe markdown-lint --fix</code>.</p>
 <h2 id="preview-documentation">Preview documentation<a class="headerlink" href="#preview-documentation" title="Permanent link">&para;</a></h2>
 <p>Serve the documentation locally:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>serve
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>serve
 </code></pre></div>
 <p>Before submitting documentation changes, check that the site builds without warnings:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>uv<span class="w"> </span>run<span class="w"> </span>mkdocs<span class="w"> </span>build<span class="w"> </span>--strict
 </code></pre></div>
-<h3 id="debugging">Debugging<a class="headerlink" href="#debugging" title="Permanent link">&para;</a></h3>
-<p>Use <code>python -m pytest --pdb tests</code> to stop on a failing test. For VS Code, adapt
-this configuration in <code>.vscode/launch.json</code> to the test you want to inspect:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="p">{</span>
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">"configurations"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="p">{</span>
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Debug plugin tests"</span><span class="p">,</span>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"debugpy"</span><span class="p">,</span>
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">      </span><span class="nt">"request"</span><span class="p">:</span><span class="w"> </span><span class="s2">"launch"</span><span class="p">,</span>
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">      </span><span class="nt">"program"</span><span class="p">:</span><span class="w"> </span><span class="s2">"${workspaceFolder}/.venv/bin/pytest"</span><span class="p">,</span>
-<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">      </span><span class="nt">"args"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"-sv"</span><span class="p">,</span><span class="w"> </span><span class="s2">"--pdb"</span><span class="p">,</span><span class="w"> </span><span class="s2">"tests/test_inference_generation.py"</span><span class="p">],</span>
-<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">      </span><span class="nt">"justMyCode"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
-<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="w">  </span><span class="p">]</span>
-<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a><span class="p">}</span>
-</code></pre></div>
-<h2 id="template-update">Template update<a class="headerlink" href="#template-update" title="Permanent link">&para;</a></h2>
-<p>Plugin maintainers can use <a href="https://cruft.github.io/cruft/"><code>cruft</code></a> to check for
-updates to the project template. Run <code>cruft update</code> from the plugin repository.
-Oasis administrators and action-form users do not need this step.</p>
-<h2 id="main-contributors">Main contributors<a class="headerlink" href="#main-contributors" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Name</th>
-<th>E-mail</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Ahmed Ilyas</td>
-<td><a href="mailto:ahmed.ilyas@physik.hu-berlin.de">ahmed.ilyas@physik.hu-berlin.de</a></td>
-</tr>
-<tr>
-<td>Sarthak Kapoor</td>
-<td><a href="mailto:sarthak.kapoor@physik.hu-berlin.de">sarthak.kapoor@physik.hu-berlin.de</a></td>
-</tr>
-</tbody>
-</table>
 
 
 
