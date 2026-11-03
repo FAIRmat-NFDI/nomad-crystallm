@@ -42,6 +42,6 @@ class CrystaLLMInferenceEntryPoint(ActionEntryPoint):
 crystallm_inference = CrystaLLMInferenceEntryPoint(
     name='CrystaLLM Inference',
     task_queue=TaskQueue.CPU,
-    description='Perform inference using the CrystaLLM model to generate crystal '
-    'structures from chemical compositions.',
+    description='Generate crystal structures from chemical compositions with '
+    'CrystaLLM and save results to a NOMAD upload.',
 )
