@@ -1,87 +1,45 @@
-# Contribute to this plugin
+# Contribute to This Plugin
 
-For everyday use, see [Using the action form](use_this_plugin.md). Deployment
-administrators can follow [Installation](install_this_plugin.md).
+## Set up development
 
-## Development
-
-For contributing to the plugin, clone the repository and install its development
-dependencies:
+We recommend using [uv](https://docs.astral.sh/uv/) to manage Python environments and dependencies, with Python 3.10 or newer. Clone the repository and install the development dependencies:
 
 ```sh
 git clone https://github.com/FAIRmat-NFDI/nomad-crystallm.git
 cd nomad-crystallm
-python -m venv .venv
+uv sync --python 3.12 --extra dev
 . .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install uv
-uv pip install -e '.[dev]'
 ```
 
-### Developing on `nomad-distro-dev`
+Run the commands below from the plugin repository root.
 
-Use the dedicated
-[`nomad-distro-dev`](https://github.com/FAIRmat-NFDI/nomad-distro-dev) workspace
-when developing against local NOMAD packages. Add the plugin to its root
-dependencies with the `cpu-action` extra:
+## Run tests
 
-```toml
-dependencies = [
-  # Other workspace dependencies...
-  "nomad-crystallm[cpu-action]",
-]
-```
-
-Follow the workspace README to configure its infrastructure, including Temporal.
-Use compatible NOMAD and UI revisions with action-form support. From the workspace
-root, run its setup task:
+Run the full test suite:
 
 ```sh
-uv run poe setup
+uv run pytest tests/
 ```
 
-Then start these services in separate terminals. Run the API and CPU action
-worker commands from the workspace root:
+To run a subset, pass a test file:
 
 ```sh
-uv run poe start
+uv run pytest tests/test_inference_generation.py
+uv run pytest tests/test_prompt_files.py
 ```
+
+Use `-k EXPRESSION` to select tests by name and `-v` for verbose output.
+
+## Check code and documentation
+
+Run linting and formatting checks with Ruff:
 
 ```sh
-uv run poe cpuworker
+uv run ruff check .
+uv run ruff format . --check
 ```
 
-Start the UI with action forms from the workspace's `ui` directory:
-
-```sh
-cd ui
-npm install
-npm start
-```
-
-### Run the tests
-
-From the plugin directory:
-
-```sh
-python -m pytest -sv tests
-```
-
-To generate a coverage report:
-
-```sh
-uv pip install pytest-cov
-python -m pytest --cov=src tests
-```
-
-### Run linting and auto-formatting
-
-```sh
-ruff check .
-ruff format . --check
-```
-
-Run `ruff format .` to apply formatting changes.
+To apply automatic formatting, run `uv run ruff format .`.
 
 Markdown linting requires Node.js 22 or newer and npm/npx:
 
@@ -104,36 +62,3 @@ Before submitting documentation changes, check that the site builds without warn
 ```sh
 uv run mkdocs build --strict
 ```
-
-### Debugging
-
-Use `python -m pytest --pdb tests` to stop on a failing test. For VS Code, adapt
-this configuration in `.vscode/launch.json` to the test you want to inspect:
-
-```json
-{
-  "configurations": [
-    {
-      "name": "Debug plugin tests",
-      "type": "debugpy",
-      "request": "launch",
-      "program": "${workspaceFolder}/.venv/bin/pytest",
-      "args": ["-sv", "--pdb", "tests/test_inference_generation.py"],
-      "justMyCode": true
-    }
-  ]
-}
-```
-
-## Template update
-
-Plugin maintainers can use [`cruft`](https://cruft.github.io/cruft/) to check for
-updates to the project template. Run `cruft update` from the plugin repository.
-Oasis administrators and action-form users do not need this step.
-
-## Main contributors
-
-| Name           | E-mail                                                                          |
-| -------------- | ------------------------------------------------------------------------------- |
-| Ahmed Ilyas    | [ahmed.ilyas@physik.hu-berlin.de](mailto:ahmed.ilyas@physik.hu-berlin.de)       |
-| Sarthak Kapoor | [sarthak.kapoor@physik.hu-berlin.de](mailto:sarthak.kapoor@physik.hu-berlin.de) |

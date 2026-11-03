@@ -104,6 +104,5 @@ Install the package in the environment used by your local NOMAD API and CPU
 action worker, then apply the Temporal and storage setup above.
 
 For development across NOMAD and the plugin, use
-[`nomad-distro-dev`](https://github.com/FAIRmat-NFDI/nomad-distro-dev). See
-[Developing on `nomad-distro-dev`](contribute_to_this_plugin.md#developing-on-nomad-distro-dev) below for the
-workspace setup and service commands.
+[`nomad-distro-dev`](https://github.com/FAIRmat-NFDI/nomad-distro-dev) and follow
+its README for workspace setup and service commands.
