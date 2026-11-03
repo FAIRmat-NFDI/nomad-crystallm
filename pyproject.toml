@@ -48,6 +48,7 @@ dev = [
     "nomad-crystallm[cpu-action]",
     "nomad-lab[infrastructure]>=2.0.0",
     "pytest",
+    "pytest-asyncio",
     "ruff",
 ]
 

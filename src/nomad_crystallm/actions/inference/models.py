@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Literal
 
+from nomad.actions.assets.models import ActionAssetRef
 from pydantic import BaseModel, Field
 
 SpaceGroupLiteral = Literal[
@@ -286,8 +287,25 @@ class InferenceSettingsInput(BaseModel):
 class CrystallmUserInput(BaseModel):
     upload_id: str = Field(..., description='ID of the NOMAD upload to save results.')
     user_id: str = Field(..., description='ID of the user making the request.')
+    prompts_file: ActionAssetRef | None = Field(
+        None,
+        title='Prompts File',
+        description='Optional CSV or XLSX file containing prompt inputs, with or '
+        'without a header. Column order: composition, num_formula_units_per_cell, '
+        'space_group. Only composition is required. Invalid rows are skipped with '
+        'warnings. Valid file rows are appended after manual prompts.',
+        json_schema_extra={
+            'x-nomad-widget': 'file-upload',
+            'accept': [
+                '.csv',
+                '.xlsx',
+                'text/csv',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ],
+        },
+    )
     prompt_construction_inputs: list[PromptConstructionInput] = Field(
-        ...,
+        default_factory=list,
         description='List of prompt construction inputs.',
         title='Prompt Construction Inputs',
     )

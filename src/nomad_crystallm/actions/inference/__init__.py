@@ -16,6 +16,7 @@ class CrystaLLMInferenceEntryPoint(ActionEntryPoint):
         from nomad_crystallm.actions.inference.activities import (
             get_model,
             get_prompt,
+            read_prompts,
             run_inference,
             write_results,
         )
@@ -28,7 +29,13 @@ class CrystaLLMInferenceEntryPoint(ActionEntryPoint):
             task_queue=self.task_queue,
             workflow=CrystallmWorkflow,
             child_workflows=[InferenceWorkflow],
-            activities=[get_model, get_prompt, run_inference, write_results],
+            activities=[
+                read_prompts,
+                get_model,
+                get_prompt,
+                run_inference,
+                write_results,
+            ],
         )
 
 
