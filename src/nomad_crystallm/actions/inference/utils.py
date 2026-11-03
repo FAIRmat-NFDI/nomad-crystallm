@@ -190,17 +190,31 @@ def evaluate_model(inference_input: InferenceInput) -> list[str]:
     start_ids = [
         encode(tokenizer.tokenize_cif(prompt)) for prompt in inference_input.prompts
     ]
-    x = torch.tensor(start_ids, dtype=torch.long, device=device)
+    # Generation has no padding/mask support, so each tensor must contain prompts
+    # of the same token length. Retain indices to restore the caller's order.
+    prompt_groups: dict[int, list[tuple[int, list[int]]]] = {}
+    for index, token_ids in enumerate(start_ids):
+        prompt_groups.setdefault(len(token_ids), []).append((index, token_ids))
+    generated_samples = [''] * len(start_ids)
     with torch.no_grad():
         with ctx:
-            y = model.generate(
-                x,
-                inference_input.inference_settings.max_new_tokens,
-                temperature=inference_input.inference_settings.temperature,
-                top_k=inference_input.inference_settings.top_k,
-            )
+            for group in prompt_groups.values():
+                x = torch.tensor(
+                    [token_ids for _, token_ids in group],
+                    dtype=torch.long,
+                    device=device,
+                )
+                y = model.generate(
+                    x,
+                    inference_input.inference_settings.max_new_tokens,
+                    temperature=inference_input.inference_settings.temperature,
+                    top_k=inference_input.inference_settings.top_k,
+                )
+                samples = model.postprocess_generation(y)
+                for (index, _), sample in zip(group, samples, strict=True):
+                    generated_samples[index] = sample
 
-    return model.postprocess_generation(y)
+    return generated_samples
 
 
 def postprocess(cif: str, fname: str, logger: 'LoggerAdapter') -> str:
