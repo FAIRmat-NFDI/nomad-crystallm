@@ -27,9 +27,8 @@ maintainers = [
 ]
 license = { file = "LICENSE" }
 dependencies = [
-    "nomad-lab>=2.0.0",
     "nomad-analysis>=0.2.2",
-    "python-magic-bin; sys_platform == 'win32'",
+    "nomad-lab>=2.0.0",
     "nomad-schema-plugin-run>=1.0.1",
     "nomad-schema-plugin-simulation-workflow>=1.0.9",
     "pymatgen>=2023.3.23",
@@ -41,15 +40,15 @@ Repository = "https://github.com/FAIRmat-NFDI/nomad-crystallm"
 
 [project.optional-dependencies]
 cpu-action = [
-    "requests",
     "aiohttp",
     "crystallm @ git+https://github.com/ka-sarthak/CrystaLLM.git@main",
+    "requests",
 ]
 dev = [
-    "nomad-lab[infrastructure]>=2.0.0",
     "nomad-crystallm[cpu-action]",
-    "ruff",
+    "nomad-lab[infrastructure]>=2.0.0",
     "pytest",
+    "ruff",
 ]
 
 [tool.ruff]
