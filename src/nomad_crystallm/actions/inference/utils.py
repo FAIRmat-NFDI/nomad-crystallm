@@ -8,8 +8,9 @@ from typing import TYPE_CHECKING
 
 import aiohttp
 import torch
-from nomad.actions.manager import action_artifacts_dir, get_upload_files
+from nomad.actions.manager import action_artifacts_dir
 from nomad.datamodel import ServerContext
+from nomad.uploads import StagingUploadFiles, get_upload_files
 from pymatgen.core import Composition
 
 from nomad_crystallm.actions.inference.models import (
