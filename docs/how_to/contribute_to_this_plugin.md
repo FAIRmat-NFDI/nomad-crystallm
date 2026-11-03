@@ -83,6 +83,28 @@ ruff format . --check
 
 Run `ruff format .` to apply formatting changes.
 
+Markdown linting requires Node.js 22 or newer and npm/npx:
+
+```sh
+uv run poe markdown-lint
+```
+
+Add `--fix` to apply automatic Markdown fixes: `uv run poe markdown-lint --fix`.
+
+## Preview documentation
+
+Serve the documentation locally:
+
+```sh
+uv run mkdocs serve
+```
+
+Before submitting documentation changes, check that the site builds without warnings:
+
+```sh
+uv run mkdocs build --strict
+```
+
 ### Debugging
 
 Use `python -m pytest --pdb tests` to stop on a failing test. For VS Code, adapt
@@ -101,15 +123,6 @@ this configuration in `.vscode/launch.json` to the test you want to inspect:
     }
   ]
 }
-```
-
-### Documentation on Github pages
-
-From the plugin directory:
-
-```sh
-uv pip install -r requirements_docs.txt
-mkdocs serve
 ```
 
 ## Template update
