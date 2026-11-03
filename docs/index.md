@@ -1,6 +1,6 @@
 # Welcome to the `nomad-crystallm` documentation
 
-Nomad example template
+nomad example template
 
 ## Introduction
 
