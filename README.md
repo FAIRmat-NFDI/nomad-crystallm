@@ -174,7 +174,7 @@ We use [`cruft`](https://github.com/cruft/cruft) to update the project based on 
 
 ## Main contributors
 
-| Name | E-mail     |
-|------|------------|
-| Ahmed Ilyas | [ahmed.ilyas@physik.hu-berlin.de](mailto:ahmed.ilyas@physik.hu-berlin.de)
-| Sarthak Kapoor | [sarthak.kapoor@physik.hu-berlin.de](mailto:sarthak.kapoor@physik.hu-berlin.de)
+| Name           | E-mail                                                                          |
+|----------------|---------------------------------------------------------------------------------|
+| Ahmed Ilyas    | [ahmed.ilyas@physik.hu-berlin.de](mailto:ahmed.ilyas@physik.hu-berlin.de)       |
+| Sarthak Kapoor | [sarthak.kapoor@physik.hu-berlin.de](mailto:sarthak.kapoor@physik.hu-berlin.de) |

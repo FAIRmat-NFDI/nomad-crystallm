@@ -45,9 +45,13 @@ cpu-action = [
     "requests",
 ]
 dev = [
+    "mkdocs",
+    "mkdocs-click",
+    "mkdocs-material>=9.5.0",
     "nomad-crystallm[cpu-action]",
     "nomad-lab[infrastructure]>=2.0.0",
     "poethepoet",
+    "pymdown-extensions",
     "pytest",
     "pytest-asyncio",
     "ruff",
