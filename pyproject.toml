@@ -45,8 +45,13 @@ cpu-action = [
     "requests",
 ]
 dev = [
+    "mkdocs",
+    "mkdocs-click",
+    "mkdocs-material>=9.5.0",
     "nomad-crystallm[cpu-action]",
     "nomad-lab[infrastructure]>=2.0.0",
+    "poethepoet",
+    "pymdown-extensions",
     "pytest",
     "pytest-asyncio",
     "ruff",
@@ -106,6 +111,14 @@ fixable = ["ALL"]
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.poe.tasks.markdown-lint]
+help = "Lint ML workflow Markdown using the CI rules"
+cmd = '''
+npx --yes markdownlint-cli2@0.23.2
+  --config .github/workflows/configs/nomad.markdownlint.jsonc
+  "*.md" "docs/**/*.md"
+'''
 
 # this is entirely optional, you can remove this if you wish to
 [tool.ruff.format]
