@@ -1,48 +1,15 @@
-# Welcome to the `nomad-crystallm` documentation
+# CrystaLLM for NOMAD
 
-nomad example template
+Generate candidate crystal structures from chemical compositions and save the
+CIF files and result entries in your NOMAD project.
 
-## Introduction
+**Use [CrystaLLM on NOMAD Oasis](https://nomad-lab.eu/oasis).**
 
-!!! note "Attention"
-    TODO
+## Start here
 
-<div markdown="block" class="home-grid">
-<div markdown="block">
+Follow [Using the action form](how_to/use_this_plugin.md) to enter a composition,
+choose inference settings, and run the action. The same guide covers multiple
+prompts, CSV/XLSX tables, and downloading results.
 
-### Tutorial
-
-TODO
-
-- [Tutorial](tutorial/tutorial.md)
-
-</div>
-<div markdown="block">
-
-### How-to guides
-
-How-to guides provide step-by-step instructions for a wide range of tasks, with the overarching topics:
-
-- [Install this plugin](how_to/install_this_plugin.md)
-- [Use this plugin](how_to/use_this_plugin.md)
-- [Contribute to this plugin](how_to/contribute_to_this_plugin.md)
-- [Contribute to the documentation](how_to/contribute_to_the_documentation.md)
-
-</div>
-
-<div markdown="block">
-
-### Explanation
-
-The explanation [section](explanation/explanation.md) provides background knowledge on this plugin.
-
-</div>
-<div markdown="block">
-
-### Reference
-
-The reference [section](reference/references.md) includes all CLI commands and arguments, all configuration options,
-the possible schema annotations and their arguments, and a glossary of used terms.
-
-</div>
-</div>
+- [Installation and Oasis setup](how_to/install_this_plugin.md) is for administrators adding the plugin to a deployment.
+- [Contributing](how_to/contribute_to_this_plugin.md) covers local development, tests, and documentation previews.

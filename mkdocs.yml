@@ -1,5 +1,6 @@
 site_name: nomad-crystallm
-site_description: Nomad example template
+site_description: Generate crystal structures with the CrystaLLM action form in NOMAD.
+site_url: https://fairmat-nfdi.github.io/nomad-crystallm/
 site_author: Ahmed Ilyas
 
 repo_url: https://github.com/FAIRmat-NFDI/nomad-crystallm
@@ -7,14 +8,9 @@ edit_uri: ""
 
 nav:
   - Home: index.md
-  - Tutorial: tutorial/tutorial.md
-  - How-to guides:
-      - Install this Plugin: how_to/install_this_plugin.md
-      - Use this Plugin: how_to/use_this_plugin.md
-      - Contribute to this plugin: how_to/contribute_to_this_plugin.md
-      - Contribute to the documentation: how_to/contribute_to_the_documentation.md
-  - Explanation: explanation/explanation.md
-  - Reference: reference/references.md
+  - Installation: how_to/install_this_plugin.md
+  - Using the action form: how_to/use_this_plugin.md
+  - Contributing: how_to/contribute_to_this_plugin.md
 plugins:
   - search
 theme:
@@ -50,7 +46,7 @@ markdown_extensions:
   - pymdownx.extra
 extra:
   generator: false
-  homepage: https://nomad-lab.eu
+  homepage: https://fairmat-nfdi.github.io/nomad-crystallm/
 use_directory_urls: false
 extra_css:
   - stylesheets/extra.css
